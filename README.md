@@ -25,6 +25,54 @@ npm install -g web-link-collector
 npm install web-link-collector
 ```
 
+### Development Setup
+
+Clone the repository and install dependencies:
+
+```bash
+git clone https://github.com/yourusername/web-link-collector.git
+cd web-link-collector
+npm install
+```
+
+Run linting:
+
+```bash
+npm run lint
+```
+
+Run tests:
+
+```bash
+npm run test:core
+```
+
+Build the project:
+
+```bash
+npm run build
+```
+
+#### Available Scripts
+
+| Script              | Description                                   |
+| ------------------- | --------------------------------------------- |
+| `npm run build`     | Compile TypeScript to JavaScript              |
+| `npm run test`      | Run all non-CLI tests                         |
+| `npm run test:core` | Run core functionality tests (same as `test`) |
+| `npm run lint`      | Check for linting issues                      |
+| `npm run lint:fix`  | Fix linting issues automatically              |
+| `npm run format`    | Format code with Prettier                     |
+| `npm run check`     | Run linting and tests                         |
+| `npm run start`     | Run the CLI tool                              |
+
+#### Git Hooks
+
+This project uses Husky to enforce code quality with the following git hooks:
+
+- **pre-commit**: runs linting, formatting, and tests on staged files
+- **pre-push**: ensures all linting and tests pass before pushing changes
+
 ## CLI Usage
 
 Basic usage with the CLI tool:
@@ -35,19 +83,19 @@ web-link-collector --initialUrl https://example.com --depth 2
 
 ### CLI Options
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `--initialUrl` | The starting URL for link collection | *Required* |
-| `--depth` | The maximum recursion depth (0-5) | 1 |
-| `--filters` | JSON string of filter conditions | None |
-| `--filtersFile` | Path to a JSON or YAML file containing filter conditions | None |
-| `--selector` | CSS selector to limit link extraction scope (only for the initial page) | None |
-| `--delayMs` | Delay in milliseconds between requests | 1000 |
-| `--logLevel` | Logging level (debug, info, warn, error, none) | info |
-| `--output` | Output file path (if not specified, outputs to stdout) | None |
-| `--format` | Output format (json, txt) | json |
-| `--configFile` | Path to a JSON or YAML configuration file | None |
-| `--help`, `-h` | Show help message | - |
+| Option          | Description                                                             | Default    |
+| --------------- | ----------------------------------------------------------------------- | ---------- |
+| `--initialUrl`  | The starting URL for link collection                                    | _Required_ |
+| `--depth`       | The maximum recursion depth (0-5)                                       | 1          |
+| `--filters`     | JSON string of filter conditions                                        | None       |
+| `--filtersFile` | Path to a JSON or YAML file containing filter conditions                | None       |
+| `--selector`    | CSS selector to limit link extraction scope (only for the initial page) | None       |
+| `--delayMs`     | Delay in milliseconds between requests                                  | 1000       |
+| `--logLevel`    | Logging level (debug, info, warn, error, none)                          | info       |
+| `--output`      | Output file path (if not specified, outputs to stdout)                  | None       |
+| `--format`      | Output format (json, txt)                                               | json       |
+| `--configFile`  | Path to a JSON or YAML configuration file                               | None       |
+| `--help`, `-h`  | Show help message                                                       | -          |
 
 ### Examples
 
@@ -90,7 +138,7 @@ import { collectLinks } from 'web-link-collector';
 
 // Simple usage
 const results = await collectLinks('https://example.com', {
-  depth: 2
+  depth: 2,
 });
 
 console.log(results);
@@ -98,13 +146,10 @@ console.log(results);
 // With more options
 const results = await collectLinks('https://example.com', {
   depth: 2,
-  filters: [
-    { domain: 'example.com' },
-    { domain: 'api.example.com' }
-  ],
+  filters: [{ domain: 'example.com' }, { domain: 'api.example.com' }],
   selector: '.main-content a',
   delayMs: 2000,
-  logLevel: 'info'
+  logLevel: 'info',
 });
 
 // Access results
@@ -133,7 +178,7 @@ filters:
   # First filter condition (OR logic between filter objects)
   - domain: example.com
     pathPrefix: /blog
-  
+
   # Second filter condition
   - domain: api.example.com
 ```

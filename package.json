@@ -9,8 +9,14 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "jest",
-    "start": "node dist/bin/web-link-collector.js"
+    "test": "jest --testPathIgnorePatterns=\"tests/cli\"",
+    "test:core": "jest tests/filter.test.ts tests/logger.test.ts tests/parser.test.ts tests/fetcher.test.ts",
+    "start": "node dist/bin/web-link-collector.js",
+    "prepare": "husky",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "format": "prettier --write 'src/**/*.ts' 'bin/**/*.ts' 'tests/**/*.ts'",
+    "check": "npm run lint && npm run test:core"
   },
   "keywords": [
     "web",
@@ -31,7 +37,15 @@
     "@types/js-yaml": "^4.0.6",
     "@types/node": "^20.8.2",
     "@types/yargs": "^17.0.26",
+    "@typescript-eslint/eslint-plugin": "^8.32.0",
+    "@typescript-eslint/parser": "^8.32.0",
+    "eslint": "^9.26.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-jest": "^28.11.0",
+    "husky": "^9.1.7",
     "jest": "^29.7.0",
+    "lint-staged": "^16.0.0",
+    "prettier": "^3.5.3",
     "ts-jest": "^29.1.1",
     "typescript": "^5.2.2"
   }
