@@ -1,0 +1,38 @@
+{
+  "name": "web-link-collector",
+  "version": "1.0.0",
+  "description": "A library and CLI tool to recursively collect links from a given initial URL and output them as structured data",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "web-link-collector": "dist/bin/web-link-collector.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "start": "node dist/bin/web-link-collector.js"
+  },
+  "keywords": [
+    "web",
+    "link",
+    "crawler",
+    "collector",
+    "cli"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.12",
+    "js-yaml": "^4.1.0",
+    "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.5",
+    "@types/js-yaml": "^4.0.6",
+    "@types/node": "^20.8.2",
+    "@types/yargs": "^17.0.26",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.2.2"
+  }
+}

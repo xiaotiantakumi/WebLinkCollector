@@ -1,0 +1,17 @@
+{
+  "initialUrl": "https://example.com",
+  "depth": 2,
+  "delayMs": 2000,
+  "logLevel": "info",
+  "format": "json",
+  "filters": [
+    {
+      "domain": "example.com",
+      "pathPrefix": "/blog"
+    },
+    {
+      "domain": "api.example.com"
+    }
+  ],
+  "selector": ".main-content a"
+}

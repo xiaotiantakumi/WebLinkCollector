@@ -1,0 +1,466 @@
+<project name="WebLinkCollector">
+  <description>A library and CLI tool to recursively collect links from a given initial URL and output them as structured data.</description>
+  <globalSettings>
+    <programmingLanguage>TypeScript</programmingLanguage>
+    <languageVersion>5.x (targeting Node.js v22+)</languageVersion>
+    <frameworkOr主要ライブラリ>Node.js, cheerio, yargs, js-yaml</frameworkOr主要ライブラリ>
+    <versionControl>Git</versionControl>
+    <testingFramework>jest</testingFramework>
+  </globalSettings>
+
+  <tasks>
+    <task id="1.1" name="Project Initialization and Dependency Installation">
+      <description>
+        Initialize a new Node.js project, install necessary dependencies (TypeScript, cheerio, yargs, js-yaml, and their types, jest),
+        and set up basic project structure including TypeScript configuration.
+      </description>
+      <dependencies>
+      </dependencies>
+      <inputs>
+      </inputs>
+      <outputs>
+        <file path="package.json" description="NPM package configuration file." />
+        <file path="tsconfig.json" description="TypeScript compiler configuration file." />
+        <file path="node_modules/" description="Directory containing installed dependencies." isDirectory="true" />
+        <file path="src/" description="Directory for source code." isDirectory="true" />
+        <file path="tests/" description="Directory for test files." isDirectory="true" />
+        <file path="bin/" description="Directory for CLI executable script." isDirectory="true" />
+        <file path=".gitignore" description="Specifies intentionally untracked files that Git should ignore." />
+      </outputs>
+      <tests>
+        <test type="fileExistence" path="package.json" description="Verify package.json exists." />
+        <test type="commandExecution" command="npm install" expectedExitCode="0" description="Verify dependencies install correctly." />
+        <test type="fileExistence" path="tsconfig.json" description="Verify tsconfig.json exists." />
+        <test type="fileExistence" path="src/" description="Verify src directory exists." />
+        <test type="fileExistence" path="tests/" description="Verify tests directory exists." />
+        <test type="fileExistence" path="bin/" description="Verify bin directory exists." />
+        <test type="fileExistence" path=".gitignore" description="Verify .gitignore exists." />
+        <test type="compilationSuccess" target="src/" description="Ensure an empty src directory (or with a placeholder file) compiles if initial files are added." />
+      </tests>
+    </task>
+
+    <task id="2.1" name="Type Definitions">
+      <description>Define core TypeScript interfaces and types for the project, including inputs, outputs, and internal data structures.</description>
+      <dependencies>
+        <dependency taskId="1.1" />
+      </dependencies>
+      <inputs>
+        <data description="Project requirements detailing data structures (FilterCondition, CollectionResult, ErrorEntry, StatInfo, LinkRelationship)." />
+      </inputs>
+      <outputs>
+        <file path="src/types.ts" description="TypeScript file containing all shared type definitions." />
+        <custom type="InterfaceDefinition" name="InitialUrlParams" file="src/types.ts" description="Parameters for the main collection function." />
+        <custom type="InterfaceDefinition" name="Filter" file="src/types.ts" description="Structure for a single filter condition." />
+        <custom type="InterfaceDefinition" name="FilterConditions" file="src/types.ts" description="Structure for an array of filter conditions (alias for Filter[])." />
+        <custom type="InterfaceDefinition" name="CollectedLink" file="src/types.ts" description="Structure for a collected link with its source." />
+        <custom type="InterfaceDefinition" name="LinkRelationship" file="src/types.ts" description="{ source: string, found: string }" />
+        <custom type="InterfaceDefinition" name="ErrorEntry" file="src/types.ts" description="{ url: string, errorType: string, message: string }" />
+        <custom type="InterfaceDefinition" name="Stats" file="src/types.ts" description="Statistical information about the collection process." />
+        <custom type="InterfaceDefinition" name="CollectionResult" file="src/types.ts" description="The final JSON output structure." />
+      </outputs>
+      <tests>
+        <test type="fileExistence" path="src/types.ts" description="Verify types.ts file is created." />
+        <test type="compilationSuccess" target="src/types.ts" description="Ensure type definitions compile without errors." />
+        <test type="contentValidation" file="src/types.ts" contains="export interface CollectionResult" description="Verify key interfaces are defined." />
+      </tests>
+    </task>
+
+    <task id="2.2" name="URL Fetching Module">
+      <description>
+        Develop a module to fetch HTML content from a given URL using Node.js built-in `Workspace`.
+        It should handle HTTP errors, redirects, and implement a delay mechanism.
+      </description>
+      <dependencies>
+        <dependency taskId="2.1" />
+      </dependencies>
+      <inputs>
+        <functionSignature name="fetch" description="Node.js global fetch API" />
+      </inputs>
+      <outputs>
+        <file path="src/fetcher.ts" description="Module for fetching URL content." />
+        <functionSignature name="fetchUrlContent" file="src/fetcher.ts" returnType="Promise<{html: string, finalUrl: string} | null>" async="true">
+          <param name="url" type="string" />
+          <param name="delayMs" type="number" />
+        </functionSignature>
+      </outputs>
+      <tests>
+        <test type="unitTest" file="tests/fetcher.test.ts" framework="jest" description="Unit tests for fetchUrlContent.">
+          <testCase name="successfully fetches HTML content and returns it with the final URL">
+            <assertion code="// Mock fetch to return successful response" />
+          </testCase>
+          <testCase name="handles HTTP errors (e.g., 404, 500) and returns null">
+            <assertion code="// Mock fetch to return error status codes" />
+          </testCase>
+          <testCase name="handles network errors (e.g., DNS resolution failure) and returns null">
+            <assertion code="// Mock fetch to throw network error" />
+          </testCase>
+          <testCase name="correctly follows redirects and returns content from the final URL">
+            <assertion code="// Mock fetch to return redirect status codes" />
+          </testCase>
+          <testCase name="implements specified delay before making a request (conceptual, hard to test timing precisely)">
+            <assertion code="// Verify delay function is called if applicable" />
+          </testCase>
+        </test>
+      </tests>
+    </task>
+
+    <task id="2.3" name="HTML Parsing and Link Extraction Module">
+      <description>
+        Develop a module using 'cheerio' to parse HTML content and extract all relevant links (`a[href]`, `link[href]`).
+        It should handle relative to absolute URL conversion and optional CSS selector filtering.
+      </description>
+      <dependencies>
+        <dependency taskId="2.1" />
+      </dependencies>
+      <inputs>
+        <library name="cheerio" description="HTML parsing library." />
+      </inputs>
+      <outputs>
+        <file path="src/parser.ts" description="Module for parsing HTML and extracting links." />
+        <functionSignature name="extractLinksFromHtml" file="src/parser.ts" returnType="Set<string>" async="false">
+          <param name="htmlContent" type="string" />
+          <param name="baseUrl" type="string" />
+          <param name="cssSelector" type="string | undefined" />
+        </functionSignature>
+      </outputs>
+      <tests>
+        <test type="unitTest" file="tests/parser.test.ts" framework="jest" description="Unit tests for extractLinksFromHtml.">
+          <testCase name="extracts absolute URLs from 'a' tags">
+            <assertion code="// Provide sample HTML with absolute links" />
+          </testCase>
+          <testCase name="extracts and converts relative URLs to absolute from 'a' tags">
+            <assertion code="// Provide sample HTML with relative links and a base URL" />
+          </testCase>
+          <testCase name="extracts relevant 'link' tag hrefs and converts to absolute URLs">
+            <assertion code="// Provide sample HTML with link tags" />
+          </testCase>
+          <testCase name="applies CSS selector to limit link extraction scope">
+            <assertion code="// Provide sample HTML and a CSS selector" />
+          </testCase>
+          <testCase name="handles HTML with no links gracefully (returns empty set)">
+            <assertion code="// Provide HTML content without any links" />
+          </testCase>
+          <testCase name="handles invalid or malformed URLs within href attributes gracefully">
+            <assertion code="// e.g. javascript:void(0)" />
+          </testCase>
+        </test>
+      </tests>
+    </task>
+
+    <task id="2.4" name="URL Filtering Module">
+      <description>
+        Develop a module to filter URLs based on provided conditions (domain, pathPrefix, regex, keywords)
+        and exclude common undesirable paths (e.g., /admin/, /login/).
+      </description>
+      <dependencies>
+        <dependency taskId="2.1" />
+      </dependencies>
+      <inputs>
+        <custom type="InterfaceDefinition" name="FilterConditions" file="src/types.ts" />
+      </inputs>
+      <outputs>
+        <file path="src/filter.ts" description="Module for filtering URLs." />
+        <functionSignature name="isUrlAllowed" file="src/filter.ts" returnType="boolean" async="false">
+          <param name="url" type="string" />
+          <param name="filters" type="FilterConditions | undefined" />
+        </functionSignature>
+      </outputs>
+      <tests>
+        <test type="unitTest" file="tests/filter.test.ts" framework="jest" description="Unit tests for isUrlAllowed.">
+          <testCase name="allows URL if no filters are provided (excluding common paths)">
+            <assertion code="expect(isUrlAllowed('http://example.com/page', undefined)).toBe(true);" />
+          </testCase>
+          <testCase name="blocks common disallowed paths like /admin/ or /login/">
+            <assertion code="expect(isUrlAllowed('http://example.com/admin/', undefined)).toBe(false);" />
+          </testCase>
+          <testCase name="filters by allowed domain (string)">
+            <assertion code="// Test with domain filter" />
+          </testCase>
+          <testCase name="filters by allowed domains (array)">
+            <assertion code="// Test with domain array filter" />
+          </testCase>
+          <testCase name="filters by allowed pathPrefix (string)">
+            <assertion code="// Test with pathPrefix filter" />
+          </testCase>
+          <testCase name="filters by allowed pathPrefix (array)">
+            <assertion code="// Test with pathPrefix array filter" />
+          </testCase>
+          <testCase name="filters by regex match (string)">
+            <assertion code="// Test with regex filter" />
+          </testCase>
+          <testCase name="filters by regex match (array)">
+            <assertion code="// Test with regex array filter" />
+          </testCase>
+          <testCase name="filters by keyword presence in URL (string)">
+            <assertion code="// Test with keywords filter" />
+          </testCase>
+          <testCase name="filters by keyword presence in URL (array)">
+            <assertion code="// Test with keywords array filter" />
+          </testCase>
+          <testCase name="applies multiple filter conditions as AND">
+            <assertion code="// Test with combined domain and pathPrefix filters" />
+          </testCase>
+        </test>
+      </tests>
+    </task>
+
+    <task id="2.5" name="Logging Module">
+      <description>Develop a simple logging module that supports different log levels (debug, info, warn, error, none).</description>
+      <dependencies>
+        <dependency taskId="2.1" />
+      </dependencies>
+      <inputs>
+        <custom type="TypeDefinition" name="LogLevel" file="src/types.ts" description="'debug' | 'info' | 'warn' | 'error' | 'none'" />
+      </inputs>
+      <outputs>
+        <file path="src/logger.ts" description="Module for logging messages." />
+        <functionSignature name="createLogger" file="src/logger.ts" returnType="object" async="false">
+          <param name="level" type="LogLevel" />
+        </functionSignature>
+        <custom type="Functionality" description="Logger object with methods: debug, info, warn, error." />
+      </outputs>
+      <tests>
+        <test type="unitTest" file="tests/logger.test.ts" framework="jest" description="Unit tests for the logger.">
+          <testCase name="logs messages for 'info' level and above when level is 'info'">
+            <assertion code="// Check console.info, console.warn, console.error calls" />
+          </testCase>
+          <testCase name="does not log 'debug' messages when level is 'info'">
+            <assertion code="// Check console.debug is not called" />
+          </testCase>
+          <testCase name="logs no messages when level is 'none'">
+            <assertion code="// Check no console methods are called" />
+          </testCase>
+        </test>
+      </tests>
+    </task>
+
+    <task id="2.6" name="Main Link Collection Logic">
+      <description>
+        Implement the core recursive link collection logic. This involves coordinating fetching, parsing, filtering,
+        managing recursion depth, handling duplicates, collecting errors, and preparing the final output structure.
+      </description>
+      <dependencies>
+        <dependency taskId="2.1" />
+        <dependency taskId="2.2" />
+        <dependency taskId="2.3" />
+        <dependency taskId="2.4" />
+        <dependency taskId="2.5" />
+      </dependencies>
+      <inputs>
+        <functionSignature name="fetchUrlContent" file="src/fetcher.ts" />
+        <functionSignature name="extractLinksFromHtml" file="src/parser.ts" />
+        <functionSignature name="isUrlAllowed" file="src/filter.ts" />
+        <functionSignature name="createLogger" file="src/logger.ts" />
+        <custom type="InterfaceDefinition" name="InitialUrlParams" file="src/types.ts" />
+        <custom type="InterfaceDefinition" name="CollectionResult" file="src/types.ts" />
+      </inputs>
+      <outputs>
+        <file path="src/collector.ts" description="Main link collection orchestrator." />
+        <functionSignature name="collectWebLinks" file="src/collector.ts" returnType="Promise<CollectionResult>" async="true">
+          <param name="params" type="InitialUrlParams" />
+        </functionSignature>
+        <file path="src/index.ts" description="Main library export file." />
+        <functionSignature name="collectLinks" file="src/index.ts" returnType="Promise<CollectionResult>" async="true" description="Public API function, likely wraps collectWebLinks">
+            <param name="initialUrl" type="string" />
+            <param name="options" type="{ depth: number; filters?: FilterConditions; selector?: string; delayMs?: number; logLevel?: LogLevel }" />
+        </functionSignature>
+      </outputs>
+      <tests>
+        <test type="unitTest" file="tests/collector.test.ts" framework="jest" description="Integration-style tests for collectWebLinks.">
+          <testCase name="collects links from initial URL for depth 0">
+            <assertion code="// Mock fetcher and parser, verify output structure" />
+          </testCase>
+          <testCase name="collects links recursively up to specified depth (e.g., depth 1)">
+            <assertion code="// Mock fetcher and parser for multi-level collection" />
+          </testCase>
+          <testCase name="respects maximum recursion depth (5)">
+            <assertion code="// Test with depth > 5, should cap at 5 actual levels of fetching (depth + 1 pages)" />
+          </testCase>
+          <testCase name="applies CSS selector only for depth 0 (initial page)">
+             <assertion code="// Mock fetcher and parser, verify selector usage on first call only" />
+          </testCase>
+          <testCase name="correctly filters URLs before fetching">
+            <assertion code="// Provide filters and verify only allowed URLs are processed" />
+          </testCase>
+          <testCase name="handles duplicate URLs correctly (collects unique URLs only)">
+            <assertion code="// Ensure allCollectedUrls contains unique entries" />
+          </testCase>
+          <testCase name="records link relationships accurately">
+            <assertion code="// Verify linkRelationships array content" />
+          </testCase>
+          <testCase name="logs and collects errors for failed URL fetches or parsing errors">
+            <assertion code="// Mock fetcher/parser to throw errors, check errors array in result" />
+          </testCase>
+          <testCase name="populates statistics (totalUrlsScanned, totalUrlsCollected, durationMs, etc.)">
+            <assertion code="// Verify stats object in result" />
+          </testCase>
+          <testCase name="includes initialUrl in allCollectedUrls if valid and not filtered out">
+            <assertion code="" />
+          </testCase>
+        </test>
+      </tests>
+    </task>
+
+    <task id="3.1" name="CLI Argument Parsing">
+      <description>
+        Implement CLI argument parsing using 'yargs'. This includes defining all options like initialUrl, depth,
+        filters (via JSON string or file path), selector, delayMs, logLevel, output file, output format, config file, and help.
+      </description>
+      <dependencies>
+        <dependency taskId="1.1" /> </dependencies>
+      <inputs>
+        <library name="yargs" description="CLI argument parsing library." />
+        <data description="CLI arguments list from requirements." />
+      </inputs>
+      <outputs>
+        <file path="src/cli/args.ts" description="Module for parsing CLI arguments." />
+        <functionSignature name="parseCliArgs" file="src/cli/args.ts" returnType="Promise<object>" async="true" description="Returns parsed arguments object." />
+      </outputs>
+      <tests>
+        <test type="unitTest" file="tests/cli/args.test.ts" framework="jest" description="Tests for CLI argument parsing.">
+          <testCase name="parses all documented CLI options correctly">
+            <assertion code="// Test with various combinations of arguments" />
+          </testCase>
+          <testCase name="provides default values where specified">
+            <assertion code="// e.g., depth, delayMs, logLevel" />
+          </testCase>
+          <testCase name="handles --help argument to show usage (yargs built-in)">
+            <assertion code="// Check if yargs help output is triggered" />
+          </testCase>
+          <testCase name="validates required arguments (e.g. initialUrl, depth)">
+             <assertion code="// Test yargs demandOption" />
+          </testCase>
+           <testCase name="validates depth to be between 0 and 5">
+             <assertion code="// Test yargs choices or custom check" />
+          </testCase>
+        </test>
+      </tests>
+    </task>
+
+    <task id="3.2" name="Configuration File Loading">
+      <description>Implement functionality to load CLI configuration from a JSON or YAML file specified by the --configFile option. CLI arguments should override file settings.</description>
+      <dependencies>
+        <dependency taskId="1.1" /> <dependency taskId="3.1" /> </dependencies>
+      <inputs>
+        <library name="js-yaml" description="YAML parsing library." />
+        <library name="fs" description="Node.js file system module." />
+      </inputs>
+      <outputs>
+        <file path="src/cli/configLoader.ts" description="Module for loading configuration from file." />
+        <functionSignature name="loadConfig" file="src/cli/configLoader.ts" returnType="Promise<object>" async="true">
+          <param name="filePath" type="string | undefined" />
+        </functionSignature>
+        <custom type="Functionality" description="Logic to merge CLI args with config file settings." />
+      </outputs>
+      <tests>
+        <test type="unitTest" file="tests/cli/configLoader.test.ts" framework="jest" description="Tests for configuration file loading.">
+          <testCase name="loads configuration from a JSON file">
+            <assertion code="// Create a dummy JSON config and test loading" />
+          </testCase>
+          <testCase name="loads configuration from a YAML file">
+            <assertion code="// Create a dummy YAML config and test loading" />
+          </testCase>
+          <testCase name="returns empty object if no file path is provided">
+            <assertion code="" />
+          </testCase>
+          <testCase name="handles file not found error gracefully">
+            <assertion code="" />
+          </testCase>
+          <testCase name="handles invalid JSON/YAML format error gracefully">
+            <assertion code="" />
+          </testCase>
+        </test>
+      </tests>
+    </task>
+
+    <task id="3.3" name="CLI Main Script and Output Handling">
+      <description>
+        Create the main CLI executable script. This script will use the argument parser, config loader,
+        call the core link collection library function, and handle outputting the results to stdout or a file
+        in JSON or TXT format.
+      </description>
+      <dependencies>
+        <dependency taskId="2.6" /> <dependency taskId="3.1" /> <dependency taskId="3.2" /> </dependencies>
+      <inputs>
+        <functionSignature name="collectLinks" file="src/index.ts" />
+        <library name="fs" description="Node.js file system module for file output." />
+      </inputs>
+      <outputs>
+        <file path="bin/web-link-collector.ts" description="Main CLI executable TypeScript source file." />
+        <custom type="BuildOutput" path="dist/bin/web-link-collector.js" description="Compiled CLI executable JavaScript file." />
+        <custom type="PackageJsonBin" field="web-link-collector" value="dist/bin/web-link-collector.js" description="Entry in package.json 'bin'."/>
+      </outputs>
+      <tests>
+        <test type="commandExecution" command="node dist/bin/web-link-collector.js --help" expectedExitCode="0" description="Verify CLI help message works." />
+        <test type="commandExecution" description="End-to-end test: run CLI with mock server, output to stdout, verify JSON.">
+          <attribute name="command" value="node dist/bin/web-link-collector.js --initialUrl http://localhost:PORT/testpage1 --depth 0 --logLevel none" />
+          <attribute name="expectedStdoutPattern" value="{\"initialUrl\":\"http://localhost:PORT/testpage1\"" />
+        </test>
+        <test type="commandExecution" description="End-to-end test: run CLI, output to JSON file, verify file content.">
+          <attribute name="command" value="node dist/bin/web-link-collector.js --initialUrl http://localhost:PORT/testpage1 --depth 0 --output results.json --format json --logLevel none" />
+          <attribute name="outputFile" value="results.json" />
+          <attribute name="expectedFileContentPattern" value="\"totalUrlsCollected\":" />
+        </test>
+        <test type="commandExecution" description="End-to-end test: run CLI, output to TXT file, verify file content.">
+           <attribute name="command" value="node dist/bin/web-link-collector.js --initialUrl http://localhost:PORT/testpage1 --depth 0 --output results.txt --format txt --logLevel none" />
+           <attribute name="outputFile" value="results.txt" />
+           <attribute name="expectedFileContentPattern" value="http://localhost:PORT/testpage1" />
+        </test>
+         <test type="commandExecution" description="End-to-end test: CLI with config file.">
+           <attribute name="command" value="node dist/bin/web-link-collector.js --configFile test-config.json --logLevel none" />
+           <attribute name="setup" value="Create test-config.json with initialUrl and depth" />
+           <attribute name="expectedStdoutPattern" value="{\"initialUrl\":" />
+        </test>
+      </tests>
+    </task>
+
+    <task id="4.1" name="Build Process and Packaging">
+        <description>Configure TypeScript build process to compile TS to JS, and ensure package.json is set up for publishing (bin scripts, main entry). This task assumes `tsc` for compilation.</description>
+        <dependencies>
+            <dependency taskId="1.1"/>
+            <dependency taskId="3.3"/>
+        </dependencies>
+        <inputs>
+            <file path="tsconfig.json" description="TypeScript configuration"/>
+            <file path="package.json" description="NPM package configuration"/>
+        </inputs>
+        <outputs>
+            <file path="dist/" description="Output directory for compiled JavaScript files." isDirectory="true" />
+            <custom type="NPMScript" name="build" command="tsc" description="NPM script to compile TypeScript."/>
+            <custom type="PackageJsonField" name="main" value="dist/index.js" description="Main entry point in package.json."/>
+            <custom type="PackageJsonField" name="types" value="dist/index.d.ts" description="Type definitions entry point."/>
+        </outputs>
+        <tests>
+            <test type="commandExecution" command="npm run build" expectedExitCode="0" description="Verify TypeScript compilation is successful."/>
+            <test type="fileExistence" path="dist/index.js" description="Verify main library file is compiled."/>
+            <test type="fileExistence" path="dist/bin/web-link-collector.js" description="Verify CLI script is compiled."/>
+            <test type="contentValidation" file="package.json" contains="\"main\": \"dist/index.js\"" description="Check main field in package.json."/>
+        </tests>
+    </task>
+
+    <task id="4.2" name="Documentation">
+      <description>
+        Create comprehensive documentation for the library and CLI tool. This includes a README.md with installation instructions,
+        API usage for the library, CLI command examples, configuration file format, and options.
+      </description>
+      <dependencies>
+        <dependency taskId="2.6" /> <dependency taskId="3.3" /> </dependencies>
+      <inputs>
+        <data description="All developed modules, functions, and CLI options." />
+      </inputs>
+      <outputs>
+        <file path="README.md" description="Main project documentation file." />
+        <file path="examples/config.example.json" description="Example JSON configuration file." />
+        <file path="examples/config.example.yaml" description="Example YAML configuration file." />
+      </outputs>
+      <tests>
+        <test type="fileExistence" path="README.md" description="Verify README.md is created." />
+        <test type="contentValidation" file="README.md" contains="Installation" description="Check for key sections in README." />
+        <test type="contentValidation" file="README.md" contains="CLI Usage" description="Check for CLI examples." />
+        <test type="contentValidation" file="README.md" contains="Library Usage" description="Check for library API examples." />
+        <test type="fileExistence" path="examples/config.example.json" description="Verify example JSON config exists." />
+        <test type="fileExistence" path="examples/config.example.yaml" description="Verify example YAML config exists." />
+      </tests>
+    </task>
+  </tasks>
+</project>
