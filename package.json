@@ -4,6 +4,7 @@
   "description": "A library and CLI tool to recursively collect links from a given initial URL and output them as structured data",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
+  "type": "module",
   "bin": {
     "web-link-collector": "dist/bin/web-link-collector.js"
   },
