@@ -1,0 +1,37 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# WebLinkCollector project common rules
+
+## Test-related
+- Test coverage should be maintained above 91%.
+- Appropriate mocking and timer handling for testing asynchronous processes
+- Ensure that ESLint checks are passed before running tests
+
+## Coding style
+- Prefix unused arguments and variables with `_` (e.g. `_message`, `_args`)
+- Do not leave console output (console.log, console.error, etc.) in production code
+- Use logger interfaces to log output at the appropriate log level.
+
+## URL processing
+- Appropriate exclusion of URLs contained within query parameters and hash fragments
+- Handle social media share links (Twitter, Facebook, etc.) with special care.
+- Explicit URL condition filtering using the `FilterConditions` type.
+- Always exclude administrative paths defined in DEFAULT_EXCLUDED_PATHS.
+
+## Error handling
+- Use try-catch syntax and catch and log errors appropriately.
+- Exceptions such as URL parsing failures should be handled explicitly and a default safe behaviour defined.
+
+## Performance considerations
+- When processing large numbers of URLs, set appropriate delays and take rate limits into account.
+- Be aware of memory usage and process large HTML strings efficiently.
+
+## Code quality
+- Ensure Husky pre-commit hooks are passed before pull requests
+- When adding new functionality, be sure to add corresponding test cases
+- Make sure all existing tests pass after refactoring
+
+Translated with www.DeepL.com/Translator (free version)
