@@ -26,6 +26,7 @@ export interface InitialUrlParams {
   depth: number;
   filters?: FilterConditions;
   selector?: string;
+  element?: string;
   delayMs?: number;
   logLevel?: LogLevel;
 }

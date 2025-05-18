@@ -15,7 +15,15 @@ import { InitialUrlParams, CollectionResult, LinkRelationship, ErrorEntry, Stats
  * @returns Promise resolving to the collection result
  */
 export const collectWebLinks = async (params: InitialUrlParams): Promise<CollectionResult> => {
-  const { initialUrl, depth, filters, selector, delayMs = 1000, logLevel = 'info' } = params;
+  const {
+    initialUrl,
+    depth,
+    filters,
+    selector,
+    element,
+    delayMs = 1000,
+    logLevel = 'info',
+  } = params;
 
   // Create logger
   const logger = createLogger(logLevel);
@@ -29,6 +37,9 @@ export const collectWebLinks = async (params: InitialUrlParams): Promise<Collect
   }
   if (selector) {
     logger.debug(`Selector: ${selector}`);
+  }
+  if (element) {
+    logger.debug(`Element: ${element}`);
   }
 
   // Data structures to track collection
@@ -139,11 +150,12 @@ export const collectWebLinks = async (params: InitialUrlParams): Promise<Collect
     const { html, finalUrl } = result;
 
     try {
-      // Use selector only for the initial page (depth 0)
+      // Use selector and element only for the initial page (depth 0)
       const useSelector = currentDepth === 0 ? selector : undefined;
+      const useElement = currentDepth === 0 ? element : undefined;
 
       // Extract links from the HTML content
-      const links = extractLinksFromHtml(html, finalUrl, useSelector, logger);
+      const links = extractLinksFromHtml(html, finalUrl, useSelector, logger, useElement);
       logger.debug(`Extracted ${links.size} links from ${finalUrl}`);
 
       // Process each extracted link sequentially to ensure proper delay between requests
