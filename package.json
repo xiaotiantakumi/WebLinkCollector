@@ -4,15 +4,25 @@
   "description": "A library and CLI tool to recursively collect links from a given initial URL and output them as structured data",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "type": "module",
   "bin": {
     "web-link-collector": "dist/bin/web-link-collector.js"
   },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md",
+    "README-ja.md"
+  ],
   "scripts": {
     "build": "tsc",
+    "postbuild": "chmod +x dist/bin/web-link-collector.js",
     "test": "jest --testPathIgnorePatterns=\"tests/cli\"",
     "test:core": "jest tests/filter.test.ts tests/logger.test.ts tests/parser.test.ts tests/fetcher.test.ts",
     "start": "node dist/bin/web-link-collector.js",
     "prepare": "husky",
+    "prepublishOnly": "npm run check && npm run build",
+    "postversion": "git push && git push --tags",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "format": "prettier --write 'src/**/*.ts' 'bin/**/*.ts' 'tests/**/*.ts'",
@@ -25,7 +35,7 @@
     "collector",
     "cli"
   ],
-  "author": "",
+  "author": "xiaotiantakumi",
   "license": "MIT",
   "dependencies": {
     "cheerio": "^1.0.0-rc.12",
@@ -53,5 +63,12 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/xiaotiantakumi/WebLinkCollector.git"
+  },
+  "bugs": {
+    "url": "https://github.com/xiaotiantakumi/WebLinkCollector/issues"
+  },
+  "homepage": "https://github.com/xiaotiantakumi/WebLinkCollector#readme",
+  "engines": {
+    "node": ">=14.0.0"
   }
 }
