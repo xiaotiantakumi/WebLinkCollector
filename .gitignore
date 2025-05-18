@@ -24,7 +24,6 @@ yarn-error.log*
 
 # Editor configs
 .idea/
-.vscode/
 *.swp
 *.swo
 
@@ -36,3 +35,4 @@ Thumbs.db
 results.json
 results.txt
 tmp/*
+config.yaml

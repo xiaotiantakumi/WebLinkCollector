@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch web-link-collector",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}/node_modules/ts-node/dist/bin.js",
+      "args": ["${workspaceFolder}/bin/web-link-collector.ts", "--configFile", "config.yaml"],
+      "runtimeArgs": ["--loader", "ts-node/esm"],
+      "outFiles": ["${workspaceFolder}/**/*.ts"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    }
+  ]
+}
