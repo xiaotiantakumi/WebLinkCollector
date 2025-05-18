@@ -20,6 +20,17 @@ export const collectWebLinks = async (params: InitialUrlParams): Promise<Collect
   // Create logger
   const logger = createLogger(logLevel);
 
+  // デバッグのために渡されたオプションをログに出力
+  logger.debug(
+    `Collector options: initialUrl=${initialUrl}, depth=${depth}, delayMs=${delayMs}, logLevel=${logLevel}`
+  );
+  if (filters) {
+    logger.debug(`Filters: ${JSON.stringify(filters)}`);
+  }
+  if (selector) {
+    logger.debug(`Selector: ${selector}`);
+  }
+
   // Data structures to track collection
   const visitedUrls = new Set<string>();
   const allCollectedUrls = new Set<string>();
@@ -28,7 +39,7 @@ export const collectWebLinks = async (params: InitialUrlParams): Promise<Collect
 
   // Stats tracking
   const stats: Stats = {
-    startTime: new Date().toISOString(),
+    startTime: '',
     endTime: '',
     durationMs: 0,
     totalUrlsScanned: 0,
@@ -39,8 +50,14 @@ export const collectWebLinks = async (params: InitialUrlParams): Promise<Collect
   // Maximum recursion depth (cap at 5)
   const maxDepth = Math.min(depth, 5);
 
-  logger.info(`Starting web link collection from ${initialUrl} with depth ${maxDepth}`);
+  // 開始時刻を記録
   const startTime = Date.now();
+  const startTimeISO = new Date(startTime).toISOString();
+  stats.startTime = startTimeISO;
+
+  logger.info(
+    `Starting web link collection from ${initialUrl} with depth ${maxDepth} at ${startTimeISO}`
+  );
 
   /**
    * Recursive function to collect links from a URL
@@ -53,6 +70,13 @@ export const collectWebLinks = async (params: InitialUrlParams): Promise<Collect
     currentDepth: number,
     sourceUrl: string | null
   ): Promise<void> => {
+    // 各リンクの処理を開始する前に、リクエスト間のディレイを適用
+    // 初回（depth=0）以外のすべてのリクエストに適用
+    if (currentDepth > 0 && delayMs > 0) {
+      logger.debug(`Applying delay of ${delayMs}ms before processing ${url}`);
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+    }
+
     // Skip if we've already visited this URL
     if (visitedUrls.has(url)) {
       logger.debug(`Skipping already visited URL: ${url}`);
@@ -99,7 +123,7 @@ export const collectWebLinks = async (params: InitialUrlParams): Promise<Collect
 
     // Fetch the URL content
     logger.debug(`Fetching URL: ${url}`);
-    const result = await fetchUrlContent(url, delayMs);
+    const result = await fetchUrlContent(url, 0, logger); // delayはcollectLinks内部で処理するため、ここでは0を渡す
 
     if (!result) {
       // Log error if fetch failed
@@ -122,8 +146,9 @@ export const collectWebLinks = async (params: InitialUrlParams): Promise<Collect
       const links = extractLinksFromHtml(html, finalUrl, useSelector);
       logger.debug(`Extracted ${links.size} links from ${finalUrl}`);
 
-      // Process each extracted link recursively
+      // Process each extracted link sequentially to ensure proper delay between requests
       for (const link of links) {
+        // Process each link one at a time to ensure delays work properly
         await collectLinks(link, currentDepth + 1, finalUrl);
       }
     } catch (error) {
@@ -151,11 +176,12 @@ export const collectWebLinks = async (params: InitialUrlParams): Promise<Collect
 
   // Calculate duration and complete stats
   const endTime = Date.now();
+  const endTimeISO = new Date(endTime).toISOString();
   stats.durationMs = endTime - startTime;
-  stats.endTime = new Date(endTime).toISOString();
+  stats.endTime = endTimeISO;
 
   logger.info(
-    `Collection completed. Collected ${stats.totalUrlsCollected} URLs, encountered ${errors.length} errors. Duration: ${stats.durationMs}ms`
+    `Collection completed at ${endTimeISO}. Collected ${stats.totalUrlsCollected} URLs, encountered ${errors.length} errors. Duration: ${stats.durationMs}ms`
   );
 
   // Prepare and return the final result

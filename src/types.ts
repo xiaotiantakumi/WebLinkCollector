@@ -9,6 +9,16 @@
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'none';
 
 /**
+ * Logger interface
+ */
+export interface Logger {
+  debug(message: string, ...args: any[]): void;
+  info(message: string, ...args: any[]): void;
+  warn(message: string, ...args: any[]): void;
+  error(message: string, ...args: any[]): void;
+}
+
+/**
  * Parameters for the main collection function
  */
 export interface InitialUrlParams {
