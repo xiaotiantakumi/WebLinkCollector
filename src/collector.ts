@@ -63,8 +63,14 @@ export const collectWebLinks = async (params: InitialUrlParams): Promise<Collect
     visitedUrls.add(url);
     stats.totalUrlsScanned++;
 
-    // Add to collected URLs if it passes the filter
-    if (isUrlAllowed(url, filters)) {
+    // Add to collected URLs if it passes the filter OR if it's the initial URL (depth 0)
+    let allowedByFilter = true;
+    if (currentDepth > 0) {
+      // Only apply filter if not the initial URL
+      allowedByFilter = isUrlAllowed(url, filters);
+    }
+
+    if (allowedByFilter) {
       allCollectedUrls.add(url);
       stats.totalUrlsCollected++;
 
@@ -82,7 +88,7 @@ export const collectWebLinks = async (params: InitialUrlParams): Promise<Collect
       }
     } else {
       logger.debug(`URL filtered out: ${url}`);
-      return;
+      return; // Do not proceed if filtered out and not initial URL
     }
 
     // Stop recursion if we've reached the maximum depth

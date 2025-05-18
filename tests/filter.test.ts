@@ -1,11 +1,11 @@
 /**
- * Tests for the URL filtering module
+ * Tests for the URL filtering functionality.
+ * Focus on core filter functionality without dependencies on specific configuration values.
  */
 
-const { isUrlAllowed } = require('../src/filter');
-// Removing unused import
-// const { FilterConditions } = require('../src/types');
-const { describe, it, expect } = require('@jest/globals');
+import { isUrlAllowed } from '../src/filter';
+import { FilterConditions } from '../src/types';
+import { describe, it, expect } from '@jest/globals';
 
 describe('isUrlAllowed', () => {
   it('allows URL if no filters are provided (excluding common paths)', () => {
@@ -98,5 +98,30 @@ describe('isUrlAllowed', () => {
     expect(isUrlAllowed('http://test.org/any-page', filters)).toBe(true);
     expect(isUrlAllowed('http://example.com/about', filters)).toBe(false);
     expect(isUrlAllowed('http://othersite.com/page', filters)).toBe(false);
+  });
+
+  it('should correctly handle default excluded paths', () => {
+    const filters: FilterConditions = [{ domain: 'example.com' }]; // No specific path filter
+    expect(isUrlAllowed('https://example.com/admin', filters)).toBe(false);
+    expect(isUrlAllowed('https://example.com/wp-login.php', filters)).toBe(false);
+    expect(isUrlAllowed('https://example.com/cart/items', filters)).toBe(false);
+    expect(isUrlAllowed('https://example.com/some/path', filters)).toBe(true);
+  });
+
+  // 様々なURLパスに対するパスプレフィックスフィルターの一般的なテスト
+  it('correctly applies pathPrefix filtering for various URL structures', () => {
+    // 先頭が完全一致するケース
+    const exactPrefixFilters: FilterConditions = [{ pathPrefix: '/test/path/' }];
+    expect(isUrlAllowed('https://example.com/test/path/page', exactPrefixFilters)).toBe(true);
+    expect(isUrlAllowed('https://example.com/another/test/path/', exactPrefixFilters)).toBe(false);
+
+    // 大文字小文字の区別
+    const caseSensitiveFilters: FilterConditions = [{ pathPrefix: '/Case/Sensitive/' }];
+    expect(isUrlAllowed('https://example.com/Case/Sensitive/page', caseSensitiveFilters)).toBe(
+      true
+    );
+    expect(isUrlAllowed('https://example.com/case/sensitive/page', caseSensitiveFilters)).toBe(
+      false
+    );
   });
 });

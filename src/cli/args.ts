@@ -13,6 +13,9 @@ import { loadConfig } from './configLoader';
  * @returns Promise resolving to the parsed arguments
  */
 export const parseCliArgs = async (): Promise<any> => {
+  // テスト環境ではprocess.exitを呼び出さないように設定
+  const exitProcess = process.env.NODE_ENV === 'test' ? false : true;
+
   return yargs(hideBin(process.argv))
     .scriptName('web-link-collector')
     .usage('Usage: $0 --initialUrl <url> [options]')
@@ -94,5 +97,6 @@ export const parseCliArgs = async (): Promise<any> => {
     .epilogue('For more information, see the documentation')
     .help()
     .alias('help', 'h')
+    .exitProcess(exitProcess) // テスト環境ではプロセスを終了しない
     .parse();
 };

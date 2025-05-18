@@ -67,12 +67,19 @@ const main = async () => {
     // Parse filters if provided as a JSON string
     let filters: FilterConditions | undefined;
     if (mergedConfig.filters) {
-      try {
-        filters = JSON.parse(mergedConfig.filters);
-      } catch (error) {
-        logger.error(
-          `Invalid JSON format for filters: ${error instanceof Error ? error.message : String(error)}`
-        );
+      if (typeof mergedConfig.filters === 'string') {
+        try {
+          filters = JSON.parse(mergedConfig.filters);
+        } catch (error) {
+          logger.error(
+            `Invalid JSON format for filters: ${error instanceof Error ? error.message : String(error)}`
+          );
+          process.exit(1);
+        }
+      } else if (typeof mergedConfig.filters === 'object') {
+        filters = mergedConfig.filters as FilterConditions;
+      } else {
+        logger.error(`Invalid type for filters: Expected a JSON string or an object.`);
         process.exit(1);
       }
     }
