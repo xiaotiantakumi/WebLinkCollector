@@ -34,4 +34,21 @@ alwaysApply: true
 - When adding new functionality, be sure to add corresponding test cases
 - Make sure all existing tests pass after refactoring
 
-Translated with www.DeepL.com/Translator (free version)
+## Logging
+- Always use the logger interface instead of direct console output in production code
+- Use null-object pattern for dummy loggers rather than wrapping console methods
+- Ensure log messages are consistent and include proper context (e.g. URL, timestamp, request ID)
+- Log levels should be appropriately assigned based on message importance
+
+## Testing
+- When using Jest's fake timers, ensure proper handling of Promise-based code:
+  - Use jest.runAllTimers() after advancing time
+  - Wait for all promises to resolve/flush before assertions
+  - Consider using jest.advanceTimersToNextTimer() for complex timing scenarios
+- Mock objects should follow the same interface patterns as real implementations
+- Test error conditions with appropriate mocks rather than triggering real errors
+
+## Documentation
+- Document rate limiting strategies and parameters
+- Include inline documentation for complex asynchronous flows
+- Add JSDoc for all exported functions and classes with proper parameter and return type documentation
