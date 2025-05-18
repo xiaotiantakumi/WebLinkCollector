@@ -6,6 +6,7 @@
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { LogLevel } from '../types';
+import { loadConfig } from './configLoader';
 
 /**
  * Parses command line arguments
@@ -18,7 +19,6 @@ export const parseCliArgs = async (): Promise<any> => {
     .option('initialUrl', {
       type: 'string',
       describe: 'The starting URL for link collection',
-      demandOption: true,
     })
     .option('depth', {
       type: 'number',
@@ -62,6 +62,25 @@ export const parseCliArgs = async (): Promise<any> => {
     .option('configFile', {
       type: 'string',
       describe: 'Path to a JSON or YAML configuration file',
+    })
+    .check(async argv => {
+      if (argv.configFile) {
+        try {
+          const configFromFile = await loadConfig(argv.configFile as string);
+          if (!argv.initialUrl && !configFromFile.initialUrl) {
+            throw new Error(
+              'initialUrl is required. Please provide it via CLI argument or in the config file.'
+            );
+          }
+        } catch (error: any) {
+          throw new Error(`Error loading config file: ${error.message}`);
+        }
+      } else if (!argv.initialUrl) {
+        throw new Error(
+          'initialUrl is required. Please provide it via CLI argument or in the config file.'
+        );
+      }
+      return true;
     })
     .example(
       '$0 --initialUrl https://example.com --depth 2',
