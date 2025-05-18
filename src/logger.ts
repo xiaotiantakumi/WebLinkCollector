@@ -22,17 +22,17 @@ interface Logger {
  */
 export const createLogger = (level: LogLevel = 'info'): Logger => {
   // Map of log levels to their priority (higher number = higher priority)
-  const LOG_LEVELS = {
+  const LOG_LEVELS: Record<LogLevel, number> = {
     debug: 0,
     info: 1,
     warn: 2,
     error: 3,
-    none: 4
+    none: 4,
   };
-  
+
   // Get the numeric priority for the specified level
   const currentLevelPriority = LOG_LEVELS[level];
-  
+
   // Create a logger that only logs messages at or above the specified level
   return {
     debug: (message: string, ...args: any[]) => {
@@ -40,23 +40,23 @@ export const createLogger = (level: LogLevel = 'info'): Logger => {
         console.debug(`[DEBUG] ${message}`, ...args);
       }
     },
-    
+
     info: (message: string, ...args: any[]) => {
       if (currentLevelPriority <= LOG_LEVELS.info) {
         console.info(`[INFO] ${message}`, ...args);
       }
     },
-    
+
     warn: (message: string, ...args: any[]) => {
       if (currentLevelPriority <= LOG_LEVELS.warn) {
         console.warn(`[WARN] ${message}`, ...args);
       }
     },
-    
+
     error: (message: string, ...args: any[]) => {
       if (currentLevelPriority <= LOG_LEVELS.error) {
         console.error(`[ERROR] ${message}`, ...args);
       }
-    }
+    },
   };
 };

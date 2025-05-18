@@ -16,7 +16,7 @@ const resolveUrl = (relativeUrl: string, baseUrl: string): string | null => {
   try {
     const url = new URL(relativeUrl, baseUrl);
     return url.toString();
-  } catch (error) {
+  } catch {
     // Invalid URL or cannot be resolved
     return null;
   }
@@ -29,7 +29,7 @@ const resolveUrl = (relativeUrl: string, baseUrl: string): string | null => {
  */
 const isValidUrl = (url: string): boolean => {
   if (!url) return false;
-  
+
   // Skip URLs with these protocols
   const invalidProtocols = ['javascript:', 'mailto:', 'tel:', 'sms:', 'file:', 'data:'];
   for (const protocol of invalidProtocols) {
@@ -37,7 +37,7 @@ const isValidUrl = (url: string): boolean => {
       return false;
     }
   }
-  
+
   return true;
 };
 
@@ -54,19 +54,19 @@ export const extractLinksFromHtml = (
   cssSelector?: string
 ): Set<string> => {
   const links = new Set<string>();
-  
+
   // Parse HTML with cheerio
   const $ = cheerio.load(htmlContent);
-  
+
   // Prepare the selector for links
-  const linkElements = cssSelector ? 
-    $(`${cssSelector} a[href], ${cssSelector} link[href]`) : 
-    $('a[href], link[href]');
-  
+  const linkElements = cssSelector
+    ? $(`${cssSelector} a[href], ${cssSelector} link[href]`)
+    : $('a[href], link[href]');
+
   // Extract href attributes
   linkElements.each((_, element) => {
     const href = $(element).attr('href');
-    
+
     if (href && isValidUrl(href)) {
       const absoluteUrl = resolveUrl(href, baseUrl);
       if (absoluteUrl) {
@@ -74,6 +74,6 @@ export const extractLinksFromHtml = (
       }
     }
   });
-  
+
   return links;
 };

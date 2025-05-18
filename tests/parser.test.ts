@@ -2,7 +2,8 @@
  * Tests for the HTML parsing and link extraction module
  */
 
-import { extractLinksFromHtml } from '../src/parser';
+const { extractLinksFromHtml } = require('../src/parser');
+const { describe, it, expect } = require('@jest/globals');
 
 describe('extractLinksFromHtml', () => {
   it('extracts absolute URLs from a tags', () => {
@@ -14,14 +15,14 @@ describe('extractLinksFromHtml', () => {
         </body>
       </html>
     `;
-    
+
     const links = extractLinksFromHtml(html, 'https://test.com');
-    
+
     expect(links.size).toBe(2);
     expect(links.has('https://example.com/')).toBe(true);
     expect(links.has('https://example.org/page')).toBe(true);
   });
-  
+
   it('extracts and converts relative URLs to absolute from a tags', () => {
     const html = `
       <html>
@@ -32,15 +33,15 @@ describe('extractLinksFromHtml', () => {
         </body>
       </html>
     `;
-    
+
     const links = extractLinksFromHtml(html, 'https://example.com/path/current/');
-    
+
     expect(links.size).toBe(3);
     expect(links.has('https://example.com/about')).toBe(true);
     expect(links.has('https://example.com/path/current/contact')).toBe(true);
     expect(links.has('https://example.com/path/products')).toBe(true);
   });
-  
+
   it('extracts relevant link tag hrefs and converts to absolute URLs', () => {
     const html = `
       <html>
@@ -53,15 +54,15 @@ describe('extractLinksFromHtml', () => {
         </body>
       </html>
     `;
-    
+
     const links = extractLinksFromHtml(html, 'https://example.com');
-    
+
     expect(links.size).toBe(3);
     expect(links.has('https://example.com/styles.css')).toBe(true);
     expect(links.has('https://cdn.example.com/library.css')).toBe(true);
     expect(links.has('https://example.com/page1')).toBe(true);
   });
-  
+
   it('applies CSS selector to limit link extraction scope', () => {
     const html = `
       <html>
@@ -77,16 +78,16 @@ describe('extractLinksFromHtml', () => {
         </body>
       </html>
     `;
-    
+
     const links = extractLinksFromHtml(html, 'https://example.com', '.main');
-    
+
     expect(links.size).toBe(2);
     expect(links.has('https://example.com/main1')).toBe(true);
     expect(links.has('https://example.com/main2')).toBe(true);
     expect(links.has('https://example.com/sidebar1')).toBe(false);
     expect(links.has('https://example.com/sidebar2')).toBe(false);
   });
-  
+
   it('handles HTML with no links gracefully (returns empty set)', () => {
     const html = `
       <html>
@@ -95,12 +96,12 @@ describe('extractLinksFromHtml', () => {
         </body>
       </html>
     `;
-    
+
     const links = extractLinksFromHtml(html, 'https://example.com');
-    
+
     expect(links.size).toBe(0);
   });
-  
+
   it('handles invalid or malformed URLs within href attributes gracefully', () => {
     const html = `
       <html>
@@ -113,9 +114,9 @@ describe('extractLinksFromHtml', () => {
         </body>
       </html>
     `;
-    
+
     const links = extractLinksFromHtml(html, 'https://example.com');
-    
+
     expect(links.size).toBe(1);
     expect(links.has('https://example.com/valid')).toBe(true);
   });
