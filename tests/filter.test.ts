@@ -3,9 +3,78 @@
  * Focus on core filter functionality without dependencies on specific configuration values.
  */
 
-import { isUrlAllowed } from '../src/filter';
+import { isUrlAllowed, isUrlInQueryParams } from '../src/filter';
 import { FilterConditions } from '../src/types';
 import { describe, it, expect } from '@jest/globals';
+
+describe('isUrlInQueryParams', () => {
+  it('detects URLs that are in query parameters', () => {
+    // TwitterのシェアURLなど、URLがクエリパラメータとして含まれるケース
+    expect(
+      isUrlInQueryParams(
+        'https://twitter.com/share?text=&url=https://takumi-oda.com/blog/',
+        'https://takumi-oda.com/blog/'
+      )
+    ).toBe(true);
+
+    // Facebookのシェアリンク
+    expect(
+      isUrlInQueryParams(
+        'https://www.facebook.com/sharer/sharer.php?u=https://takumi-oda.com/blog/&t=',
+        'https://takumi-oda.com/blog/'
+      )
+    ).toBe(true);
+
+    // 複数のパラメータがある場合
+    expect(
+      isUrlInQueryParams(
+        'https://example.com/share?title=test&url=https://takumi-oda.com/blog/&other=value',
+        'https://takumi-oda.com/blog/'
+      )
+    ).toBe(true);
+
+    // URLの一部だけが一致する場合（これは偽陽性を避けるためfalseを返すべき）
+    expect(
+      isUrlInQueryParams(
+        'https://example.com/share?url=https://takumi-oda.com/blog/article',
+        'https://takumi-oda.com/blog/'
+      )
+    ).toBe(true); // URLの一部が含まれている場合もtrueを返す
+
+    // 異なるURLパラメータの場合
+    expect(
+      isUrlInQueryParams(
+        'https://example.com/share?url=https://different-site.com/',
+        'https://takumi-oda.com/blog/'
+      )
+    ).toBe(false);
+
+    // クエリパラメータがない場合
+    expect(isUrlInQueryParams('https://example.com/page', 'https://takumi-oda.com/blog/')).toBe(
+      false
+    );
+
+    // 同じURLの場合（自己参照ではないと判断）
+    expect(isUrlInQueryParams('https://takumi-oda.com/blog/', 'https://takumi-oda.com/blog/')).toBe(
+      false
+    );
+  });
+
+  it('detects URLs in hash fragments', () => {
+    // ハッシュフラグメントにURLが含まれる場合
+    expect(
+      isUrlInQueryParams(
+        'https://example.com/page#url=https://takumi-oda.com/blog/',
+        'https://takumi-oda.com/blog/'
+      )
+    ).toBe(true);
+
+    // 通常のアンカーリンクの場合（偽陽性を避ける）
+    expect(
+      isUrlInQueryParams('https://example.com/page#section1', 'https://takumi-oda.com/blog/')
+    ).toBe(false);
+  });
+});
 
 describe('isUrlAllowed', () => {
   it('allows URL if no filters are provided (excluding common paths)', () => {
@@ -123,5 +192,24 @@ describe('isUrlAllowed', () => {
     expect(isUrlAllowed('https://example.com/case/sensitive/page', caseSensitiveFilters)).toBe(
       false
     );
+  });
+
+  it('blocks URLs that have the baseUrl in their query parameters', () => {
+    const baseUrl = 'https://takumi-oda.com/blog/';
+
+    // クエリパラメータにbaseUrlが含まれるケース
+    expect(
+      isUrlAllowed(
+        'https://twitter.com/share?text=&url=https://takumi-oda.com/blog/',
+        undefined,
+        baseUrl
+      )
+    ).toBe(false);
+
+    // 通常のURLは許可される
+    expect(isUrlAllowed('https://example.com/page', undefined, baseUrl)).toBe(true);
+
+    // ターゲットURLそのものは許可される
+    expect(isUrlAllowed('https://takumi-oda.com/blog/', undefined, baseUrl)).toBe(true);
   });
 });

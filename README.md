@@ -1,5 +1,7 @@
 # WebLinkCollector
 
+English | [日本語](./README-ja.md)
+
 A library and CLI tool to recursively collect links from a given initial URL and output them as structured data.
 
 ## Features
@@ -7,6 +9,7 @@ A library and CLI tool to recursively collect links from a given initial URL and
 - Recursively crawl web pages up to a configurable depth (max 5)
 - Extract links from HTML content using CSS selectors
 - Filter URLs by domain, path prefix, regex patterns, and keywords
+- Exclude URLs embedded in query parameters and hash fragments
 - Output results as JSON or plain text
 - Configurable logging levels and request delays
 - Support for configuration via JSON/YAML files
@@ -44,7 +47,7 @@ npm run lint
 Run tests:
 
 ```bash
-npm run test:core
+npm run test
 ```
 
 Build the project:
@@ -58,7 +61,7 @@ npm run build
 | Script              | Description                                   |
 | ------------------- | --------------------------------------------- |
 | `npm run build`     | Compile TypeScript to JavaScript              |
-| `npm run test`      | Run all non-CLI tests                         |
+| `npm run test`      | Run all tests                                 |
 | `npm run test:core` | Run core functionality tests (same as `test`) |
 | `npm run lint`      | Check for linting issues                      |
 | `npm run lint:fix`  | Fix linting issues automatically              |
@@ -95,6 +98,8 @@ web-link-collector --initialUrl https://example.com --depth 2
 | `--output`      | Output file path (if not specified, outputs to stdout)                  | None       |
 | `--format`      | Output format (json, txt)                                               | json       |
 | `--configFile`  | Path to a JSON or YAML configuration file                               | None       |
+| `--skipQuery`   | Skip URLs embedded in query parameters                                  | true       |
+| `--skipHash`    | Skip URLs embedded in hash fragments                                    | true       |
 | `--help`, `-h`  | Show help message                                                       | -          |
 
 ### Examples
@@ -121,6 +126,12 @@ Output results to a text file:
 
 ```bash
 web-link-collector --initialUrl https://example.com --output results.txt --format txt
+```
+
+Disable skipping URLs in query parameters:
+
+```bash
+web-link-collector --initialUrl https://example.com --skipQuery false
 ```
 
 Use a configuration file:
@@ -150,6 +161,8 @@ const results = await collectLinks('https://example.com', {
   selector: '.main-content a',
   delayMs: 2000,
   logLevel: 'info',
+  skipQueryUrls: true, // Skip URLs embedded in query parameters
+  skipHashUrls: true, // Skip URLs embedded in hash fragments
 });
 
 // Access results
@@ -171,7 +184,11 @@ logLevel: info
 format: json
 
 # CSS selector to limit link extraction on the initial page
-selector: .main-content a
+selector: '.main-content a'
+
+# Skip URLs in query parameters and hash fragments
+skipQueryUrls: true
+skipHashUrls: true
 
 # Filters define which URLs will be collected
 filters:
@@ -182,6 +199,16 @@ filters:
   # Second filter condition
   - domain: api.example.com
 ```
+
+### Important Notes About Configuration Files
+
+1. **YAML Special Characters**: When using special characters in YAML (like `#`, `:`, etc.), you must wrap the value in quotes. For example, use `selector: "#main"` instead of `selector: #main`.
+
+2. **CLI vs Configuration Priority**: When both CLI options and a configuration file are provided, the CLI options take precedence. Only CLI options that are explicitly specified will override the configuration file values.
+
+3. **Selector Behavior**: The CSS selector is only applied to the initial page (depth 0) to extract links. Subsequent pages will have all links extracted regardless of the selector.
+
+4. **URL Exclusion**: URLs embedded in query parameters or hash fragments, such as social media share links (e.g., `https://twitter.com/share?url=https://example.com`), are skipped by default.
 
 See the `examples` directory for more configuration examples.
 

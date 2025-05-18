@@ -2,8 +2,8 @@
  * Tests for the HTML parsing and link extraction module
  */
 
-const { extractLinksFromHtml } = require('../src/parser');
-const { describe, it, expect } = require('@jest/globals');
+import { extractLinksFromHtml } from '../src/parser';
+import { describe, it, expect } from '@jest/globals';
 
 describe('extractLinksFromHtml', () => {
   it('extracts absolute URLs from a tags', () => {
@@ -119,5 +119,47 @@ describe('extractLinksFromHtml', () => {
 
     expect(links.size).toBe(1);
     expect(links.has('https://example.com/valid')).toBe(true);
+  });
+
+  it('excludes URLs where the base URL is in the query parameters', () => {
+    const baseUrl = 'https://example.com/blog/';
+    const html = `
+      <html>
+        <body>
+          <a href="https://twitter.com/share?text=&url=https://example.com/blog/">Share on Twitter</a>
+          <a href="https://www.facebook.com/sharer/sharer.php?u=https://example.com/blog/">Share on Facebook</a>
+          <a href="https://example.com/blog/article">Normal link</a>
+          <a href="https://example.com/contact">Contact page</a>
+        </body>
+      </html>
+    `;
+
+    const links = extractLinksFromHtml(html, baseUrl);
+
+    expect(links.size).toBe(2);
+    expect(links.has('https://twitter.com/share?text=&url=https://example.com/blog/')).toBe(false);
+    expect(
+      links.has('https://www.facebook.com/sharer/sharer.php?u=https://example.com/blog/')
+    ).toBe(false);
+    expect(links.has('https://example.com/blog/article')).toBe(true);
+    expect(links.has('https://example.com/contact')).toBe(true);
+  });
+
+  it('excludes URLs where the base URL is in the hash fragment', () => {
+    const baseUrl = 'https://example.com/blog/';
+    const html = `
+      <html>
+        <body>
+          <a href="https://example.com/share#url=https://example.com/blog/">Share link with fragment</a>
+          <a href="https://example.com/blog/article#section1">Article with normal fragment</a>
+        </body>
+      </html>
+    `;
+
+    const links = extractLinksFromHtml(html, baseUrl);
+
+    expect(links.size).toBe(1);
+    expect(links.has('https://example.com/share#url=https://example.com/blog/')).toBe(false);
+    expect(links.has('https://example.com/blog/article#section1')).toBe(true);
   });
 });
