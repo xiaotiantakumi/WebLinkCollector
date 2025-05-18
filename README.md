@@ -81,7 +81,11 @@ This project uses Husky to enforce code quality with the following git hooks:
 Basic usage with the CLI tool:
 
 ```bash
+# グローバルインストールした場合
 web-link-collector --initialUrl https://example.com --depth 2
+
+# ローカルインストールした場合はnpxを使用
+npx web-link-collector --initialUrl https://example.com --depth 2
 ```
 
 ### CLI Options
@@ -108,37 +112,71 @@ web-link-collector --initialUrl https://example.com --depth 2
 Collect links from a website with a recursion depth of 2:
 
 ```bash
+# グローバルインストールした場合
 web-link-collector --initialUrl https://example.com --depth 2
+
+# ローカルインストールした場合
+npx web-link-collector --initialUrl https://example.com --depth 2
 ```
 
 Only collect links from the specified domain:
 
 ```bash
+# グローバルインストールした場合
 web-link-collector --initialUrl https://example.com --filters '{"domain": "example.com"}'
+
+# ローカルインストールした場合
+npx web-link-collector --initialUrl https://example.com --filters '{"domain": "example.com"}'
 ```
 
 Limit link extraction to a specific section of the initial page:
 
 ```bash
+# グローバルインストールした場合
 web-link-collector --initialUrl https://example.com --selector ".main-content a"
+
+# ローカルインストールした場合
+npx web-link-collector --initialUrl https://example.com --selector ".main-content a"
+```
+
+Limit link extraction to a specific HTML element on the initial page:
+
+```bash
+# グローバルインストールした場合
+web-link-collector --initialUrl https://example.com --element main
+
+# ローカルインストールした場合
+npx web-link-collector --initialUrl https://example.com --element main
 ```
 
 Output results to a text file:
 
 ```bash
+# グローバルインストールした場合
 web-link-collector --initialUrl https://example.com --output results.txt --format txt
+
+# ローカルインストールした場合
+npx web-link-collector --initialUrl https://example.com --output results.txt --format txt
 ```
 
 Disable skipping URLs in query parameters:
 
 ```bash
+# グローバルインストールした場合
 web-link-collector --initialUrl https://example.com --skipQuery false
+
+# ローカルインストールした場合
+npx web-link-collector --initialUrl https://example.com --skipQuery false
 ```
 
 Use a configuration file:
 
 ```bash
+# グローバルインストールした場合
 web-link-collector --configFile config.yaml
+
+# ローカルインストールした場合
+npx web-link-collector --configFile config.yaml
 ```
 
 ## Library Usage

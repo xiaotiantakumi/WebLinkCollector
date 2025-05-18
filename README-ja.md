@@ -81,7 +81,11 @@ npm run build
 CLIツールの基本的な使用方法：
 
 ```bash
+# グローバルインストールした場合
 web-link-collector --initialUrl https://example.com --depth 2
+
+# ローカルインストールした場合はnpxを使用
+npx web-link-collector --initialUrl https://example.com --depth 2
 ```
 
 ### CLIオプション
@@ -108,37 +112,71 @@ web-link-collector --initialUrl https://example.com --depth 2
 再帰深度2でウェブサイトからリンクを収集：
 
 ```bash
+# グローバルインストールした場合
 web-link-collector --initialUrl https://example.com --depth 2
+
+# ローカルインストールした場合
+npx web-link-collector --initialUrl https://example.com --depth 2
 ```
 
 指定したドメインからのリンクのみを収集：
 
 ```bash
+# グローバルインストールした場合
 web-link-collector --initialUrl https://example.com --filters '{"domain": "example.com"}'
+
+# ローカルインストールした場合
+npx web-link-collector --initialUrl https://example.com --filters '{"domain": "example.com"}'
 ```
 
 初期ページの特定セクションからのリンク抽出に制限：
 
 ```bash
+# グローバルインストールした場合
 web-link-collector --initialUrl https://example.com --selector ".main-content a"
+
+# ローカルインストールした場合
+npx web-link-collector --initialUrl https://example.com --selector ".main-content a"
+```
+
+特定のHTML要素からのリンク抽出に制限：
+
+```bash
+# グローバルインストールした場合
+web-link-collector --initialUrl https://example.com --element main
+
+# ローカルインストールした場合
+npx web-link-collector --initialUrl https://example.com --element main
 ```
 
 結果をテキストファイルに出力：
 
 ```bash
+# グローバルインストールした場合
 web-link-collector --initialUrl https://example.com --output results.txt --format txt
+
+# ローカルインストールした場合
+npx web-link-collector --initialUrl https://example.com --output results.txt --format txt
 ```
 
 クエリパラメータ内のURLのスキップを無効化：
 
 ```bash
+# グローバルインストールした場合
 web-link-collector --initialUrl https://example.com --skipQuery false
+
+# ローカルインストールした場合
+npx web-link-collector --initialUrl https://example.com --skipQuery false
 ```
 
 設定ファイルを使用：
 
 ```bash
+# グローバルインストールした場合
 web-link-collector --configFile config.yaml
+
+# ローカルインストールした場合
+npx web-link-collector --configFile config.yaml
 ```
 
 ## ライブラリ使用方法
