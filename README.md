@@ -28,6 +28,20 @@ npm install -g web-link-collector
 npm install web-link-collector
 ```
 
+### Using from CDN
+
+```html
+<script type="module">
+  import { collectLinks } from 'https://cdn.jsdelivr.net/npm/web-link-collector@1.0.0/dist/index.js';
+
+  // Use the library as needed
+  async function main() {
+    const results = await collectLinks('https://example.com', { depth: 1 });
+    console.log(results);
+  }
+</script>
+```
+
 ### Development Setup
 
 Clone the repository and install dependencies:
@@ -55,6 +69,26 @@ Build the project:
 ```bash
 npm run build
 ```
+
+### Publishing to npm
+
+To publish a new version to npm, follow these steps:
+
+1. Update the version in `package.json`:
+
+```bash
+npm version patch  # For bug fixes
+npm version minor  # For new features
+npm version major  # For breaking changes
+```
+
+2. Publish to npm:
+
+```bash
+npm publish
+```
+
+The package will automatically run linting and tests via the `prepublishOnly` script before publishing.
 
 #### Available Scripts
 

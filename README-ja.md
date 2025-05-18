@@ -28,6 +28,20 @@ npm install -g web-link-collector
 npm install web-link-collector
 ```
 
+### CDNからの使用
+
+```html
+<script type="module">
+  import { collectLinks } from 'https://cdn.jsdelivr.net/npm/web-link-collector@1.0.0/dist/index.js';
+
+  // ライブラリの使用例
+  async function main() {
+    const results = await collectLinks('https://example.com', { depth: 1 });
+    console.log(results);
+  }
+</script>
+```
+
 ### 開発環境セットアップ
 
 リポジトリをクローンして依存関係をインストール：
@@ -55,6 +69,26 @@ npm run test
 ```bash
 npm run build
 ```
+
+### npmへの公開
+
+npmに新しいバージョンを公開するには、次の手順に従います：
+
+1. `package.json`のバージョンを更新します：
+
+```bash
+npm version patch  # バグ修正の場合
+npm version minor  # 新機能追加の場合
+npm version major  # 破壊的変更の場合
+```
+
+2. npmに公開：
+
+```bash
+npm publish
+```
+
+パッケージは`prepublishOnly`スクリプトを通じて、公開前に自動的にリントとテストを実行します。
 
 #### 利用可能なスクリプト
 
