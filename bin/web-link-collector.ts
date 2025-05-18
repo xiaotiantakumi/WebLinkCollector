@@ -53,6 +53,7 @@ const main = async () => {
       try {
         logger.info(`Loading configuration from file: ${cliArgs.configFile}`);
         config = await loadConfig(cliArgs.configFile);
+        logger.debug(`Loaded config from file: ${JSON.stringify(config, null, 2)}`);
       } catch (error) {
         logger.error(
           `Failed to load configuration file: ${error instanceof Error ? error.message : String(error)}`
@@ -63,6 +64,7 @@ const main = async () => {
 
     // Merge CLI arguments with file configuration
     const mergedConfig = mergeConfig(cliArgs, config);
+    logger.debug(`Merged config: ${JSON.stringify(mergedConfig, null, 2)}`);
 
     // Parse filters if provided as a JSON string
     let filters: FilterConditions | undefined;
@@ -110,6 +112,9 @@ const main = async () => {
     logger.info(
       `Starting link collection from ${mergedConfig.initialUrl} with depth ${options.depth}`
     );
+
+    // デバッグログにオプションを表示
+    logger.debug(`Collection options: ${JSON.stringify(options, null, 2)}`);
 
     // Collect links
     const results = await collectLinks(mergedConfig.initialUrl, options);

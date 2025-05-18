@@ -63,13 +63,32 @@ export const mergeConfig = (
   // Deep clone the file config to avoid modifying the original
   const mergedConfig = { ...fileConfig };
 
+  console.debug(
+    `Before merge - fileConfig delayMs: ${fileConfig.delayMs}, cliArgs delayMs: ${cliArgs.delayMs}`
+  );
+
+  // Check if delayMs was explicitly set in CLI or is using the default value
+  const isDelayMsExplicitlySet = process.argv.some(
+    arg => arg.startsWith('--delayMs=') || arg === '--delayMs'
+  );
+
+  console.debug(`delayMs explicitly set in CLI: ${isDelayMsExplicitlySet}`);
+
   // Merge CLI arguments (they take precedence)
   for (const [key, value] of Object.entries(cliArgs)) {
     // Only override if the CLI argument is explicitly provided (not undefined)
     if (value !== undefined) {
-      mergedConfig[key] = value;
+      // For delayMs, if not explicitly set in CLI and available in config file, use config file value
+      if (key === 'delayMs' && !isDelayMsExplicitlySet && fileConfig.delayMs !== undefined) {
+        console.debug(`Using delayMs from config: ${fileConfig.delayMs}`);
+        mergedConfig[key] = fileConfig.delayMs;
+      } else {
+        mergedConfig[key] = value;
+      }
     }
   }
+
+  console.debug(`After merge - mergedConfig delayMs: ${mergedConfig.delayMs}`);
 
   return mergedConfig;
 };
