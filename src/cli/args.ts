@@ -54,6 +54,10 @@ export const parseCliArgs = async (): Promise<any> => {
       type: 'string',
       describe: 'CSS selector to limit link extraction scope (only applied to the initial page)',
     })
+    .option('element', {
+      type: 'string',
+      describe: 'HTML tag name to use as starting point for link extraction (e.g., main, article)',
+    })
     .option('delayMs', {
       type: 'number',
       describe: 'Delay in milliseconds between requests',

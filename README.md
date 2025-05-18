@@ -81,63 +81,102 @@ This project uses Husky to enforce code quality with the following git hooks:
 Basic usage with the CLI tool:
 
 ```bash
+# グローバルインストールした場合
 web-link-collector --initialUrl https://example.com --depth 2
+
+# ローカルインストールした場合はnpxを使用
+npx web-link-collector --initialUrl https://example.com --depth 2
 ```
 
 ### CLI Options
 
-| Option          | Description                                                             | Default    |
-| --------------- | ----------------------------------------------------------------------- | ---------- |
-| `--initialUrl`  | The starting URL for link collection                                    | _Required_ |
-| `--depth`       | The maximum recursion depth (0-5)                                       | 1          |
-| `--filters`     | JSON string of filter conditions                                        | None       |
-| `--filtersFile` | Path to a JSON or YAML file containing filter conditions                | None       |
-| `--selector`    | CSS selector to limit link extraction scope (only for the initial page) | None       |
-| `--delayMs`     | Delay in milliseconds between requests                                  | 1000       |
-| `--logLevel`    | Logging level (debug, info, warn, error, none)                          | info       |
-| `--output`      | Output file path (if not specified, outputs to stdout)                  | None       |
-| `--format`      | Output format (json, txt)                                               | json       |
-| `--configFile`  | Path to a JSON or YAML configuration file                               | None       |
-| `--skipQuery`   | Skip URLs embedded in query parameters                                  | true       |
-| `--skipHash`    | Skip URLs embedded in hash fragments                                    | true       |
-| `--help`, `-h`  | Show help message                                                       | -          |
+| Option          | Description                                                                      | Default    |
+| --------------- | -------------------------------------------------------------------------------- | ---------- |
+| `--initialUrl`  | The starting URL for link collection                                             | _Required_ |
+| `--depth`       | The maximum recursion depth (0-5)                                                | 1          |
+| `--filters`     | JSON string of filter conditions                                                 | None       |
+| `--filtersFile` | Path to a JSON or YAML file containing filter conditions                         | None       |
+| `--selector`    | CSS selector to limit link extraction scope (only for the initial page)          | None       |
+| `--element`     | HTML tag name to use as starting point for link extraction (e.g., main, article) | None       |
+| `--delayMs`     | Delay in milliseconds between requests                                           | 1000       |
+| `--logLevel`    | Logging level (debug, info, warn, error, none)                                   | info       |
+| `--output`      | Output file path (if not specified, outputs to stdout)                           | None       |
+| `--format`      | Output format (json, txt)                                                        | json       |
+| `--configFile`  | Path to a JSON or YAML configuration file                                        | None       |
+| `--skipQuery`   | Skip URLs embedded in query parameters                                           | true       |
+| `--skipHash`    | Skip URLs embedded in hash fragments                                             | true       |
+| `--help`, `-h`  | Show help message                                                                | -          |
 
 ### Examples
 
 Collect links from a website with a recursion depth of 2:
 
 ```bash
+# グローバルインストールした場合
 web-link-collector --initialUrl https://example.com --depth 2
+
+# ローカルインストールした場合
+npx web-link-collector --initialUrl https://example.com --depth 2
 ```
 
 Only collect links from the specified domain:
 
 ```bash
+# グローバルインストールした場合
 web-link-collector --initialUrl https://example.com --filters '{"domain": "example.com"}'
+
+# ローカルインストールした場合
+npx web-link-collector --initialUrl https://example.com --filters '{"domain": "example.com"}'
 ```
 
 Limit link extraction to a specific section of the initial page:
 
 ```bash
+# グローバルインストールした場合
 web-link-collector --initialUrl https://example.com --selector ".main-content a"
+
+# ローカルインストールした場合
+npx web-link-collector --initialUrl https://example.com --selector ".main-content a"
+```
+
+Limit link extraction to a specific HTML element on the initial page:
+
+```bash
+# グローバルインストールした場合
+web-link-collector --initialUrl https://example.com --element main
+
+# ローカルインストールした場合
+npx web-link-collector --initialUrl https://example.com --element main
 ```
 
 Output results to a text file:
 
 ```bash
+# グローバルインストールした場合
 web-link-collector --initialUrl https://example.com --output results.txt --format txt
+
+# ローカルインストールした場合
+npx web-link-collector --initialUrl https://example.com --output results.txt --format txt
 ```
 
 Disable skipping URLs in query parameters:
 
 ```bash
+# グローバルインストールした場合
 web-link-collector --initialUrl https://example.com --skipQuery false
+
+# ローカルインストールした場合
+npx web-link-collector --initialUrl https://example.com --skipQuery false
 ```
 
 Use a configuration file:
 
 ```bash
+# グローバルインストールした場合
 web-link-collector --configFile config.yaml
+
+# ローカルインストールした場合
+npx web-link-collector --configFile config.yaml
 ```
 
 ## Library Usage
@@ -221,6 +260,9 @@ format: json
 # CSS selector to limit link extraction on the initial page
 selector: '.main-content a'
 
+# HTML tag name to use as starting point for link extraction
+element: 'main'
+
 # Skip URLs in query parameters and hash fragments
 skipQueryUrls: true
 skipHashUrls: true
@@ -241,7 +283,7 @@ filters:
 
 2. **CLI vs Configuration Priority**: When both CLI options and a configuration file are provided, the CLI options take precedence. Only CLI options that are explicitly specified will override the configuration file values.
 
-3. **Selector Behavior**: The CSS selector is only applied to the initial page (depth 0) to extract links. Subsequent pages will have all links extracted regardless of the selector.
+3. **Selector and Element Behavior**: The CSS selector and element options are only applied to the initial page (depth 0) to extract links. Subsequent pages will have all links extracted regardless of the selector or element. If both options are specified, selector takes precedence.
 
 4. **URL Exclusion**: URLs embedded in query parameters or hash fragments, such as social media share links (e.g., `https://twitter.com/share?url=https://example.com`), are skipped by default.
 
