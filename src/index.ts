@@ -4,12 +4,7 @@
  */
 
 import { collectWebLinks } from './collector';
-import { 
-  InitialUrlParams, 
-  CollectionResult, 
-  FilterConditions,
-  LogLevel
-} from './types';
+import { InitialUrlParams, CollectionResult, FilterConditions, LogLevel } from './types';
 
 /**
  * Main public API function to collect links from a URL
@@ -30,9 +25,9 @@ export const collectLinks = async (
   // Combine parameters for the internal collection function
   const params: InitialUrlParams = {
     initialUrl,
-    ...options
+    ...options,
   };
-  
+
   return collectWebLinks(params);
 };
 

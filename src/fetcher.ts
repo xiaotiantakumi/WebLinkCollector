@@ -32,7 +32,7 @@ export const fetchUrlContent = async (
       redirect: 'follow', // Automatically follow redirects
       headers: {
         'User-Agent': 'WebLinkCollector/1.0.0',
-        'Accept': 'text/html',
+        Accept: 'text/html',
       },
     });
 

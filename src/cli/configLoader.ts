@@ -16,14 +16,14 @@ export const loadConfig = async (filePath?: string): Promise<Record<string, any>
   if (!filePath) {
     return {};
   }
-  
+
   try {
     // Get the file extension to determine the format
     const ext = path.extname(filePath).toLowerCase();
-    
+
     // Read the file content
     const fileContent = await fs.readFile(filePath, 'utf8');
-    
+
     // Parse the content based on the file extension
     if (ext === '.json') {
       return JSON.parse(fileContent);
@@ -43,7 +43,7 @@ export const loadConfig = async (filePath?: string): Promise<Record<string, any>
         throw new Error(`Invalid YAML format in file: ${filePath}`);
       }
     }
-    
+
     // Re-throw the original error for other cases
     throw error;
   }
@@ -62,7 +62,7 @@ export const mergeConfig = (
 ): Record<string, any> => {
   // Deep clone the file config to avoid modifying the original
   const mergedConfig = { ...fileConfig };
-  
+
   // Merge CLI arguments (they take precedence)
   for (const [key, value] of Object.entries(cliArgs)) {
     // Only override if the CLI argument is explicitly provided (not undefined)
@@ -70,6 +70,6 @@ export const mergeConfig = (
       mergedConfig[key] = value;
     }
   }
-  
+
   return mergedConfig;
 };
