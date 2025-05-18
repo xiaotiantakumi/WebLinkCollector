@@ -16,7 +16,20 @@ export const parseCliArgs = async (): Promise<any> => {
   // テスト環境ではprocess.exitを呼び出さないように設定
   const exitProcess = process.env.NODE_ENV === 'test' ? false : true;
 
-  return yargs(hideBin(process.argv))
+  // 明示的に指定されたオプションを追跡するための配列
+  const specifiedOptions: string[] = [];
+
+  // 引数の処理中にキャプチャするミドルウェア
+  const trackSpecifiedOptions = (argv: any) => {
+    Object.keys(argv).forEach(key => {
+      if (key !== '_' && key !== '$0' && !key.startsWith('$')) {
+        specifiedOptions.push(key);
+      }
+    });
+    return argv;
+  };
+
+  const parser = yargs(hideBin(process.argv))
     .scriptName('web-link-collector')
     .usage('Usage: $0 --initialUrl <url> [options]')
     .option('initialUrl', {
@@ -66,6 +79,7 @@ export const parseCliArgs = async (): Promise<any> => {
       type: 'string',
       describe: 'Path to a JSON or YAML configuration file',
     })
+    .middleware(trackSpecifiedOptions)
     .check(async argv => {
       if (argv.configFile) {
         try {
@@ -97,6 +111,19 @@ export const parseCliArgs = async (): Promise<any> => {
     .epilogue('For more information, see the documentation')
     .help()
     .alias('help', 'h')
-    .exitProcess(exitProcess) // テスト環境ではプロセスを終了しない
-    .parse();
+    .exitProcess(exitProcess); // テスト環境ではプロセスを終了しない
+
+  const args = await parser.parse();
+
+  // 明示的に指定されたオプションのみを含む新しいオブジェクトを作成
+  const explicitArgs: Record<string, any> = {};
+  specifiedOptions.forEach(key => {
+    explicitArgs[key] = args[key];
+  });
+
+  // 特殊なプロパティを追加
+  explicitArgs.$0 = args.$0;
+  explicitArgs._ = args._;
+
+  return explicitArgs;
 };

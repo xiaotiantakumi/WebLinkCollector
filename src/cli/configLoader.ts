@@ -76,8 +76,8 @@ export const mergeConfig = (
 
   // Merge CLI arguments (they take precedence)
   for (const [key, value] of Object.entries(cliArgs)) {
-    // Only override if the CLI argument is explicitly provided (not undefined)
-    if (value !== undefined) {
+    // Only process actual CLI arguments, not yargs internal properties
+    if (key !== '_' && key !== '$0' && !key.startsWith('$')) {
       // For delayMs, if not explicitly set in CLI and available in config file, use config file value
       if (key === 'delayMs' && !isDelayMsExplicitlySet && fileConfig.delayMs !== undefined) {
         console.debug(`Using delayMs from config: ${fileConfig.delayMs}`);

@@ -2,13 +2,20 @@
  * WebLinkCollector URL Fetcher Module
  * This module handles fetching HTML content from URLs.
  */
-import { Logger } from './types';
+
+// ロガーインポートを追加
+import { createLogger, Logger } from './logger';
+import { LogLevel } from './types';
 
 /**
  * Delay execution for a specified number of milliseconds
  * @param ms - Time to delay in milliseconds
+ * @param logger - Optional logger for debug output
  */
-const delay = (ms: number): Promise<void> => {
+const delay = async (ms: number, logger?: Logger): Promise<void> => {
+  if (logger) {
+    logger.debug(`Waiting for ${ms}ms before next request...`);
+  }
   return new Promise(resolve => setTimeout(resolve, ms));
 };
 
@@ -17,10 +24,10 @@ const delay = (ms: number): Promise<void> => {
  */
 const createDummyLogger = (): Logger => {
   return {
-    debug: (message: string, ...args: any[]) => console.debug(`[DEBUG] ${message}`, ...args),
-    info: (message: string, ...args: any[]) => console.info(`[INFO] ${message}`, ...args),
-    warn: (message: string, ...args: any[]) => console.warn(`[WARN] ${message}`, ...args),
-    error: (message: string, ...args: any[]) => console.error(`[ERROR] ${message}`, ...args),
+    debug: (_message: string, ..._args: any[]) => {},
+    info: (_message: string, ..._args: any[]) => {},
+    warn: (_message: string, ..._args: any[]) => {},
+    error: (_message: string, ..._args: any[]) => {},
   };
 };
 
@@ -28,29 +35,29 @@ const createDummyLogger = (): Logger => {
  * Fetches HTML content from a given URL
  * @param url - The URL to fetch content from
  * @param delayMs - Delay in milliseconds before making the request (for rate limiting)
- * @param logger - Logger instance for outputting logs (optional)
+ * @param logLevel - Optional log level for this fetch operation
  * @returns Promise that resolves to the HTML content and final URL (after redirects) or null if failed
  */
 export const fetchUrlContent = async (
   url: string,
   delayMs: number,
-  logger?: Logger
+  logLevel?: LogLevel
 ): Promise<{ html: string; finalUrl: string } | null> => {
-  // ロガーが渡されなかった場合はダミーロガーを使用
-  const log = logger || createDummyLogger();
+  // Create logger if logLevel is provided, otherwise use dummy logger
+  const logger = logLevel ? createLogger(logLevel) : createDummyLogger();
 
   try {
     // リクエスト開始時刻をログに記録
     const requestStartTime = new Date().toISOString();
-    log.info(`Starting request to ${url} at ${requestStartTime}`);
+    logger.debug(`Starting request to ${url} at ${requestStartTime}`);
 
     // Implement delay if specified (for rate limiting)
     if (delayMs > 0) {
-      log.debug(`Applying delay of ${delayMs}ms before request to ${url}`);
-      await delay(delayMs);
+      await delay(delayMs, logger);
     }
 
     // Make the request using fetch API
+    logger.debug(`Executing fetch for ${url}`);
     const response = await fetch(url, {
       redirect: 'follow', // Automatically follow redirects
       headers: {
@@ -61,18 +68,20 @@ export const fetchUrlContent = async (
 
     // リクエスト終了時刻をログに記録
     const requestEndTime = new Date().toISOString();
-    log.info(`Completed request to ${url} at ${requestEndTime}`);
+    logger.debug(`Completed request to ${url} at ${requestEndTime}`);
 
     // Check if the response is OK (status in the range 200-299)
     if (!response.ok) {
-      log.error(`HTTP error: ${response.status} ${response.statusText} for URL: ${url}`);
+      const errorMessage = `HTTP error: ${response.status} ${response.statusText} for URL: ${url}`;
+      logger.error(errorMessage);
       return null;
     }
 
     // Check if the content type is HTML
     const contentType = response.headers.get('content-type');
     if (!contentType || !contentType.includes('text/html')) {
-      log.warn(`Skipping non-HTML content: ${contentType} for URL: ${url}`);
+      const warnMessage = `Skipping non-HTML content: ${contentType} for URL: ${url}`;
+      logger.warn(warnMessage);
       return null;
     }
 
@@ -82,10 +91,14 @@ export const fetchUrlContent = async (
     // Get the final URL (in case of redirects)
     const finalUrl = response.url;
 
+    logger.debug(
+      `Successfully fetched ${url}, final URL: ${finalUrl}, content length: ${html.length}`
+    );
     return { html, finalUrl };
   } catch (error) {
     // Handle network errors, DNS resolution failure, etc.
-    log.error(`Failed to fetch URL: ${url}`, error);
+    const errorMessage = `Failed to fetch URL: ${url}`;
+    logger.error(errorMessage, error);
     return null;
   }
 };

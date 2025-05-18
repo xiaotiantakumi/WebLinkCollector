@@ -123,7 +123,7 @@ export const collectWebLinks = async (params: InitialUrlParams): Promise<Collect
 
     // Fetch the URL content
     logger.debug(`Fetching URL: ${url}`);
-    const result = await fetchUrlContent(url, 0, logger); // delayはcollectLinks内部で処理するため、ここでは0を渡す
+    const result = await fetchUrlContent(url, delayMs, logLevel);
 
     if (!result) {
       // Log error if fetch failed
@@ -143,7 +143,7 @@ export const collectWebLinks = async (params: InitialUrlParams): Promise<Collect
       const useSelector = currentDepth === 0 ? selector : undefined;
 
       // Extract links from the HTML content
-      const links = extractLinksFromHtml(html, finalUrl, useSelector);
+      const links = extractLinksFromHtml(html, finalUrl, useSelector, logger);
       logger.debug(`Extracted ${links.size} links from ${finalUrl}`);
 
       // Process each extracted link sequentially to ensure proper delay between requests

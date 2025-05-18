@@ -8,7 +8,7 @@ import { LogLevel } from './types';
 /**
  * Interface for a logger object
  */
-interface Logger {
+export interface Logger {
   debug: (message: string, ...args: any[]) => void;
   info: (message: string, ...args: any[]) => void;
   warn: (message: string, ...args: any[]) => void;

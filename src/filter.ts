@@ -22,12 +22,53 @@ const DEFAULT_EXCLUDED_PATHS = [
 ];
 
 /**
+ * クエリパラメータの中に指定したURLが含まれているかをチェックする
+ * @param url - チェック対象のURL
+ * @param targetUrl - 検索するURL（パラメータとして含まれているかチェックするURL）
+ * @returns パラメータとして含まれている場合はtrue、そうでなければfalse
+ */
+export const isUrlInQueryParams = (url: string, targetUrl: string): boolean => {
+  try {
+    // 自身と同じURLの場合はパラメータではない
+    if (url === targetUrl) {
+      return false;
+    }
+
+    // URLオブジェクトを作成してクエリパラメータを取得
+    const parsedUrl = new URL(url);
+
+    // 全てのクエリパラメータを確認
+    for (const [, value] of parsedUrl.searchParams.entries()) {
+      // パラメータ値にtargetUrlが含まれているかチェック
+      if (value.includes(targetUrl)) {
+        return true;
+      }
+    }
+
+    // URLのハッシュフラグメント内にもtargetUrlが含まれているかチェック
+    if (parsedUrl.hash && parsedUrl.hash.includes(targetUrl)) {
+      return true;
+    }
+
+    return false;
+  } catch {
+    // URLのパースに失敗した場合は安全のためtrueを返す
+    return false;
+  }
+};
+
+/**
  * Checks if a URL matches any of the filter conditions
  * @param url - The URL to check
  * @param filters - Array of filter conditions
+ * @param baseUrl - Optional base URL to check if URL is in parameters
  * @returns Boolean indicating if the URL is allowed according to filters
  */
-export const isUrlAllowed = (url: string, filters?: FilterConditions): boolean => {
+export const isUrlAllowed = (
+  url: string,
+  filters?: FilterConditions,
+  baseUrl?: string
+): boolean => {
   try {
     const parsedUrl = new URL(url);
     const hostname = parsedUrl.hostname;
@@ -38,6 +79,11 @@ export const isUrlAllowed = (url: string, filters?: FilterConditions): boolean =
       if (pathname.includes(excludedPath)) {
         return false;
       }
+    }
+
+    // もしbaseUrlが指定されている場合、そのURLがクエリパラメータ内に含まれていないかチェック
+    if (baseUrl && isUrlInQueryParams(url, baseUrl)) {
+      return false;
     }
 
     // If no filters provided, allow all URLs (except excluded paths)

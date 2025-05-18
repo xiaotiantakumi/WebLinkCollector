@@ -171,7 +171,7 @@ logLevel: info
 format: json
 
 # CSS selector to limit link extraction on the initial page
-selector: .main-content a
+selector: '.main-content a'
 
 # Filters define which URLs will be collected
 filters:
@@ -182,6 +182,14 @@ filters:
   # Second filter condition
   - domain: api.example.com
 ```
+
+### Important Notes About Configuration Files
+
+1. **YAML Special Characters**: When using special characters in YAML (like `#`, `:`, etc.), you must wrap the value in quotes. For example, use `selector: "#main"` instead of `selector: #main`.
+
+2. **CLI vs Configuration Priority**: When both CLI options and a configuration file are provided, the CLI options take precedence. Only CLI options that are explicitly specified will override the configuration file values.
+
+3. **Selector Behavior**: The CSS selector is only applied to the initial page (depth 0) to extract links. Subsequent pages will have all links extracted regardless of the selector.
 
 See the `examples` directory for more configuration examples.
 
