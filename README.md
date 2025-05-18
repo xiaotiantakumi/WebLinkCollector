@@ -172,6 +172,41 @@ console.log(`Encountered ${results.errors.length} errors`);
 console.log(`Duration: ${results.stats.durationMs}ms`);
 ```
 
+### TypeScript Usage Example
+
+You can also use it with TypeScript. Create a file, for example, `examples/library_usage_example.ts`:
+
+```typescript
+import { collectLinks } from 'web-link-collector'; // Adjust path if necessary, e.g., '../src' for local development
+
+async function main() {
+  try {
+    const results = await collectLinks('https://example.com', {
+      depth: 1,
+    });
+    console.log('Collected links:', results);
+  } catch (error) {
+    console.error('Error occurred:', error);
+  }
+}
+
+main();
+```
+
+To run this TypeScript example, you'll need `ts-node`:
+
+```bash
+# Install ts-node if you haven't already
+npm install -D ts-node
+# or
+# pnpm add -D ts-node
+# or
+# yarn add -D ts-node
+
+# Execute the script
+npx ts-node examples/library_usage_example.ts
+```
+
 ## Configuration Files
 
 You can use JSON or YAML configuration files to specify options. Here's an example:
