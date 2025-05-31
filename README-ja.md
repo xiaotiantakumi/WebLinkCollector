@@ -118,8 +118,8 @@ CLIツールの基本的な使用方法：
 # グローバルインストールした場合
 web-link-collector --initialUrl https://example.com --depth 2
 
-# ローカルインストールした場合はnpxを使用
-npx web-link-collector --initialUrl https://example.com --depth 2
+# ローカルインストールした場合はbunを使用
+bun web-link-collector --initialUrl https://example.com --depth 2
 ```
 
 ### CLIオプション
@@ -150,7 +150,7 @@ npx web-link-collector --initialUrl https://example.com --depth 2
 web-link-collector --initialUrl https://example.com --depth 2
 
 # ローカルインストールした場合
-npx web-link-collector --initialUrl https://example.com --depth 2
+bun web-link-collector --initialUrl https://example.com --depth 2
 ```
 
 指定したドメインからのリンクのみを収集：
@@ -160,7 +160,7 @@ npx web-link-collector --initialUrl https://example.com --depth 2
 web-link-collector --initialUrl https://example.com --filters '{"domain": "example.com"}'
 
 # ローカルインストールした場合
-npx web-link-collector --initialUrl https://example.com --filters '{"domain": "example.com"}'
+bun web-link-collector --initialUrl https://example.com --filters '{"domain": "example.com"}'
 ```
 
 初期ページの特定セクションからのリンク抽出に制限：
@@ -170,7 +170,7 @@ npx web-link-collector --initialUrl https://example.com --filters '{"domain": "e
 web-link-collector --initialUrl https://example.com --selector ".main-content a"
 
 # ローカルインストールした場合
-npx web-link-collector --initialUrl https://example.com --selector ".main-content a"
+bun web-link-collector --initialUrl https://example.com --selector ".main-content a"
 ```
 
 特定のHTML要素からのリンク抽出に制限：
@@ -180,7 +180,7 @@ npx web-link-collector --initialUrl https://example.com --selector ".main-conten
 web-link-collector --initialUrl https://example.com --element main
 
 # ローカルインストールした場合
-npx web-link-collector --initialUrl https://example.com --element main
+bun web-link-collector --initialUrl https://example.com --element main
 ```
 
 結果をテキストファイルに出力：
@@ -190,7 +190,7 @@ npx web-link-collector --initialUrl https://example.com --element main
 web-link-collector --initialUrl https://example.com --output results.txt --format txt
 
 # ローカルインストールした場合
-npx web-link-collector --initialUrl https://example.com --output results.txt --format txt
+bun web-link-collector --initialUrl https://example.com --output results.txt --format txt
 ```
 
 クエリパラメータ内のURLのスキップを無効化：
@@ -200,7 +200,7 @@ npx web-link-collector --initialUrl https://example.com --output results.txt --f
 web-link-collector --initialUrl https://example.com --skipQuery false
 
 # ローカルインストールした場合
-npx web-link-collector --initialUrl https://example.com --skipQuery false
+bun web-link-collector --initialUrl https://example.com --skipQuery false
 ```
 
 設定ファイルを使用：
@@ -210,7 +210,7 @@ npx web-link-collector --initialUrl https://example.com --skipQuery false
 web-link-collector --configFile config.yaml
 
 # ローカルインストールした場合
-npx web-link-collector --configFile config.yaml
+bun web-link-collector --configFile config.yaml
 ```
 
 ## ライブラリ使用方法

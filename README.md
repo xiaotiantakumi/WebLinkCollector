@@ -206,11 +206,11 @@ npx web-link-collector --initialUrl https://example.com --skipQuery false
 Use a configuration file:
 
 ```bash
-# グローバルインストールした場合
+# Global installation
 web-link-collector --configFile config.yaml
 
-# ローカルインストールした場合
-npx web-link-collector --configFile config.yaml
+# Local installation
+bun web-link-collector --configFile config.yaml
 ```
 
 ## Library Usage
