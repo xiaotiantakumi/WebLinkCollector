@@ -8,14 +8,9 @@
   "bin": {
     "web-link-collector": "dist/bin/web-link-collector.js"
   },
-  "files": [
-    "dist",
-    "LICENSE",
-    "README.md",
-    "README-ja.md"
-  ],
+  "files": ["dist", "LICENSE", "README.md", "README-ja.md"],
   "scripts": {
-    "build": "bun build src/index.ts --outdir dist/src --target node --format esm && bun build bin/web-link-collector.ts --outdir dist/bin --target node --format esm && tsc --declaration --emitDeclarationOnly",
+    "build": "bun build src/index.ts --target node --outdir dist/src --format esm && bun build bin/web-link-collector.ts --target node --outdir dist/bin --format esm && tsc --declaration --emitDeclarationOnly",
     "postbuild": "chmod +x dist/bin/web-link-collector.js",
     "test": "bun test --testPathIgnorePatterns=\"tests/cli\"",
     "test:core": "bun test tests/filter.test.ts tests/logger.test.ts tests/parser.test.ts tests/fetcher.test.ts",
@@ -27,18 +22,10 @@
     "lint": "bunx eslint . --ext .ts",
     "lint:fix": "bunx eslint . --ext .ts --fix",
     "format": "bunx prettier --write 'src/**/*.ts' 'bin/**/*.ts' 'tests/**/*.ts'",
-    "tsc": "tsc",
     "check": "bun run lint && bun run test:core",
     "clean": "rm -rf dist"
   },
-  "keywords": [
-    "web",
-    "link",
-    "crawler",
-    "collector",
-    "cli",
-    "bun"
-  ],
+  "keywords": ["web", "link", "crawler", "collector", "cli", "bun"],
   "author": "xiaotiantakumi",
   "license": "MIT",
   "dependencies": {
@@ -47,7 +34,6 @@
     "yargs": "^17.7.2"
   },
   "devDependencies": {
-    "@types/bun": "^1.2.15",
     "@types/jest": "^29.5.5",
     "@types/js-yaml": "^4.0.6",
     "@types/node": "^20.8.2",

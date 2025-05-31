@@ -2,22 +2,23 @@
  * Tests for configuration file loading
  */
 
-import fs from 'fs/promises';
-import yaml from 'js-yaml';
 import { loadConfig, mergeConfig } from '../../src/cli/configLoader';
-import { jest, describe, it, beforeEach, expect } from '@jest/globals';
-
-// Set up manual mocks for fs and yaml
-const mockReadFile = jest.fn();
-const mockYamlLoad = jest.fn();
-
-// Replace the actual functions with our mocks
-fs.readFile = mockReadFile;
-yaml.load = mockYamlLoad;
+import { describe, it, beforeEach, afterEach, expect } from 'bun:test';
+import fs from 'fs/promises';
+import path from 'path';
+import os from 'os';
 
 describe('loadConfig', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
+  let tempDir: string;
+
+  beforeEach(async () => {
+    // Create a temporary directory for test files
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'config-loader-test-'));
+  });
+
+  afterEach(async () => {
+    // Clean up temporary files
+    await fs.rmdir(tempDir, { recursive: true });
   });
 
   it('returns empty object if no file path is provided', async () => {
@@ -25,75 +26,80 @@ describe('loadConfig', () => {
     expect(config).toEqual({});
   });
 
+  it('returns empty object if empty string is provided', async () => {
+    const config = await loadConfig('');
+    expect(config).toEqual({});
+  });
+
   it('loads configuration from a JSON file', async () => {
     const mockConfig = { initialUrl: 'https://example.com', depth: 2 };
-    const mockFileContent = JSON.stringify(mockConfig);
+    const configPath = path.join(tempDir, 'config.json');
 
-    mockReadFile.mockResolvedValue(mockFileContent);
+    await fs.writeFile(configPath, JSON.stringify(mockConfig));
 
-    const config = await loadConfig('config.json');
+    const config = await loadConfig(configPath);
 
     expect(config).toEqual(mockConfig);
-    expect(mockReadFile).toHaveBeenCalledWith('config.json', 'utf8');
   });
 
   it('loads configuration from a YAML file', async () => {
     const mockConfig = { initialUrl: 'https://example.com', depth: 2 };
-    const mockFileContent = 'initialUrl: https://example.com\ndepth: 2';
+    const yamlContent = 'initialUrl: https://example.com\ndepth: 2';
+    const configPath = path.join(tempDir, 'config.yaml');
 
-    mockReadFile.mockResolvedValue(mockFileContent);
-    mockYamlLoad.mockReturnValue(mockConfig);
+    await fs.writeFile(configPath, yamlContent);
 
-    const config = await loadConfig('config.yaml');
+    const config = await loadConfig(configPath);
 
     expect(config).toEqual(mockConfig);
-    expect(mockReadFile).toHaveBeenCalledWith('config.yaml', 'utf8');
-    expect(mockYamlLoad).toHaveBeenCalledWith(mockFileContent);
+  });
+
+  it('loads configuration from a YML file', async () => {
+    const mockConfig = { initialUrl: 'https://example.com', depth: 2 };
+    const yamlContent = 'initialUrl: https://example.com\ndepth: 2';
+    const configPath = path.join(tempDir, 'config.yml');
+
+    await fs.writeFile(configPath, yamlContent);
+
+    const config = await loadConfig(configPath);
+
+    expect(config).toEqual(mockConfig);
   });
 
   it('handles file not found error gracefully', async () => {
-    const error = new Error('File not found');
-    (error as NodeJS.ErrnoException).code = 'ENOENT';
-    mockReadFile.mockRejectedValue(error);
+    const nonexistentPath = path.join(tempDir, 'nonexistent.json');
 
-    await expect(loadConfig('nonexistent.json')).rejects.toThrow('Configuration file not found');
+    await expect(loadConfig(nonexistentPath)).rejects.toThrow('設定ファイルが見つかりません');
   });
 
   it('handles invalid JSON format error gracefully', async () => {
-    const error = new SyntaxError('Invalid JSON');
-    mockReadFile.mockResolvedValue('invalid json');
+    const configPath = path.join(tempDir, 'invalid.json');
+    await fs.writeFile(configPath, 'invalid json {');
 
-    // Store original JSON.parse
-    const originalJSONParse = JSON.parse;
-
-    // Mock JSON.parse to throw an error
-    JSON.parse = jest.fn().mockImplementation(() => {
-      throw error;
-    });
-
-    try {
-      await expect(loadConfig('invalid.json')).rejects.toThrow('Invalid JSON format');
-    } finally {
-      // Restore original JSON.parse
-      JSON.parse = originalJSONParse;
-    }
+    await expect(loadConfig(configPath)).rejects.toThrow('ファイルのJSON形式が無効です');
   });
 
   it('handles invalid YAML format error gracefully', async () => {
-    const error = new Error('JS-YAML: bad indentation');
-    mockReadFile.mockResolvedValue('invalid yaml');
-    mockYamlLoad.mockImplementation(() => {
-      throw error;
-    });
+    const configPath = path.join(tempDir, 'invalid.yaml');
+    await fs.writeFile(configPath, 'invalid:\n  - yaml\n - content');
 
-    await expect(loadConfig('invalid.yaml')).rejects.toThrow('Invalid YAML format');
+    await expect(loadConfig(configPath)).rejects.toThrow('ファイルのYAML形式が無効です');
   });
 
-  it('throws original error for other error types', async () => {
-    const error = new Error('Unknown error');
-    mockReadFile.mockRejectedValue(error);
+  it('throws error for unsupported file format', async () => {
+    const configPath = path.join(tempDir, 'config.txt');
+    await fs.writeFile(configPath, 'some content');
 
-    await expect(loadConfig('config.json')).rejects.toThrow('Unknown error');
+    await expect(loadConfig(configPath)).rejects.toThrow('サポートされていないファイル形式');
+  });
+
+  it('validates that config is an object', async () => {
+    const configPath = path.join(tempDir, 'config.json');
+    await fs.writeFile(configPath, '"string value"');
+
+    await expect(loadConfig(configPath)).rejects.toThrow(
+      '設定ファイルは有効なオブジェクトである必要があります'
+    );
   });
 });
 

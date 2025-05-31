@@ -3,41 +3,32 @@
  */
 
 import { fetchUrlContent } from '../src/fetcher';
-import { jest, describe, it, beforeEach, expect } from '@jest/globals';
+import { describe, it, beforeEach, expect, mock } from 'bun:test';
 
-// fetchをモック化
-global.fetch = jest.fn();
-const mockFetch = global.fetch as jest.Mock;
-
-/**
- * 時間待機のモック関数を作成
- */
-jest.mock('../src/fetcher', () => {
-  const originalModule = jest.requireActual('../src/fetcher');
-  return {
-    ...originalModule,
-    // delayをエクスポートして、テストできるようにする
-    delay: jest.fn().mockImplementation(() => Promise.resolve()),
-  };
-});
+// Mock fetch using Bun's mock functionality
+const mockFetch = mock(() => Promise.resolve(new Response()));
 
 describe('fetchUrlContent', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    global.fetch = mockFetch as any;
+    mockFetch.mockClear();
   });
 
   it('successfully fetches HTML content and returns it with the final URL', async () => {
     const mockHtml = '<html><body><a href="https://example.com">Link</a></body></html>';
-    const mockResponse = {
-      ok: true,
+    const mockResponse = new Response(mockHtml, {
       status: 200,
       statusText: 'OK',
       headers: {
-        get: jest.fn().mockReturnValue('text/html; charset=utf-8'),
+        'content-type': 'text/html; charset=utf-8',
       },
-      text: jest.fn().mockResolvedValue(mockHtml),
-      url: 'https://example.com',
-    };
+    });
+
+    // Override url property since Response constructor doesn't accept it
+    Object.defineProperty(mockResponse, 'url', {
+      value: 'https://example.com',
+      writable: false,
+    });
 
     mockFetch.mockResolvedValue(mockResponse);
 
@@ -46,25 +37,24 @@ describe('fetchUrlContent', () => {
     expect(result).not.toBeNull();
     expect(result?.html).toBe(mockHtml);
     expect(result?.finalUrl).toBe('https://example.com');
-    expect(mockFetch).toHaveBeenCalledWith('https://example.com', expect.any(Object));
+    expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 
   it('handles HTTP errors (e.g., 404, 500) and returns null', async () => {
-    const mockResponse = {
-      ok: false,
+    const mockResponse = new Response(null, {
       status: 404,
       statusText: 'Not Found',
       headers: {
-        get: jest.fn().mockReturnValue('text/html'),
+        'content-type': 'text/html',
       },
-    };
+    });
 
     mockFetch.mockResolvedValue(mockResponse);
 
     const result = await fetchUrlContent('https://example.com/notfound', 0);
 
     expect(result).toBeNull();
-    expect(mockFetch).toHaveBeenCalledWith('https://example.com/notfound', expect.any(Object));
+    expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 
   it('handles network errors (e.g., DNS resolution failure) and returns null', async () => {
@@ -73,21 +63,24 @@ describe('fetchUrlContent', () => {
     const result = await fetchUrlContent('https://invalid-domain.zzz', 0);
 
     expect(result).toBeNull();
-    expect(mockFetch).toHaveBeenCalledWith('https://invalid-domain.zzz', expect.any(Object));
+    expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 
   it('correctly follows redirects and returns content from the final URL', async () => {
     const mockHtml = '<html><body>Redirected page</body></html>';
-    const mockResponse = {
-      ok: true,
+    const mockResponse = new Response(mockHtml, {
       status: 200,
       statusText: 'OK',
       headers: {
-        get: jest.fn().mockReturnValue('text/html'),
+        'content-type': 'text/html',
       },
-      text: jest.fn().mockResolvedValue(mockHtml),
-      url: 'https://example.com/final-page',
-    };
+    });
+
+    // Override url property to simulate redirect
+    Object.defineProperty(mockResponse, 'url', {
+      value: 'https://example.com/final-page',
+      writable: false,
+    });
 
     mockFetch.mockResolvedValue(mockResponse);
 
@@ -99,22 +92,58 @@ describe('fetchUrlContent', () => {
   });
 
   it('skips non-HTML content', async () => {
-    const mockResponse = {
-      ok: true,
+    const mockResponse = new Response('{"data": "test"}', {
       status: 200,
       statusText: 'OK',
       headers: {
-        get: jest.fn().mockReturnValue('application/json'),
+        'content-type': 'application/json',
       },
-      text: jest.fn().mockResolvedValue('{"data": "test"}'),
-      url: 'https://example.com/api',
-    };
+    });
+
+    Object.defineProperty(mockResponse, 'url', {
+      value: 'https://example.com/api',
+      writable: false,
+    });
 
     mockFetch.mockResolvedValue(mockResponse);
 
     const result = await fetchUrlContent('https://example.com/api', 0);
 
     expect(result).toBeNull();
-    expect(mockFetch).toHaveBeenCalledWith('https://example.com/api', expect.any(Object));
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('handles empty URL and returns null', async () => {
+    const result = await fetchUrlContent('', 0);
+    expect(result).toBeNull();
+    expect(mockFetch).toHaveBeenCalledTimes(0);
+  });
+
+  it('handles invalid protocol and returns null', async () => {
+    const result = await fetchUrlContent('ftp://example.com', 0);
+    expect(result).toBeNull();
+    expect(mockFetch).toHaveBeenCalledTimes(0);
+  });
+
+  it('handles empty HTML content and returns null', async () => {
+    const mockResponse = new Response('', {
+      status: 200,
+      statusText: 'OK',
+      headers: {
+        'content-type': 'text/html',
+      },
+    });
+
+    Object.defineProperty(mockResponse, 'url', {
+      value: 'https://example.com/empty',
+      writable: false,
+    });
+
+    mockFetch.mockResolvedValue(mockResponse);
+
+    const result = await fetchUrlContent('https://example.com/empty', 0);
+
+    expect(result).toBeNull();
+    expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 });

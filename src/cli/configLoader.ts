@@ -1,19 +1,36 @@
 /**
  * WebLinkCollector Configuration File Loader
  * This module handles loading configuration from JSON or YAML files.
+ * Optimized for Bun runtime with enhanced performance and error handling.
  */
 
-import fs from 'fs/promises';
 import path from 'path';
 import yaml from 'js-yaml';
 
 /**
- * Loads configuration from a JSON or YAML file
+ * Configuration interface for type safety
+ */
+export interface Config {
+  initialUrl?: string;
+  depth?: number;
+  filters?: any;
+  filtersFile?: string;
+  selector?: string;
+  element?: string;
+  delayMs?: number;
+  logLevel?: string;
+  output?: string;
+  format?: 'json' | 'txt';
+  [key: string]: any;
+}
+
+/**
+ * Loads configuration from a JSON or YAML file using Bun optimizations
  * @param filePath - Path to the configuration file
  * @returns Promise resolving to the parsed configuration object
  */
-export const loadConfig = async (filePath?: string): Promise<Record<string, any>> => {
-  if (!filePath) {
+export const loadConfig = async (filePath?: string): Promise<Config> => {
+  if (!filePath?.trim()) {
     return {};
   }
 
@@ -21,26 +38,54 @@ export const loadConfig = async (filePath?: string): Promise<Record<string, any>
     // Get the file extension to determine the format
     const ext = path.extname(filePath).toLowerCase();
 
-    // Read the file content
-    const fileContent = await fs.readFile(filePath, 'utf8');
+    // Use Bun's optimized file reading if available
+    let fileContent: string;
+    try {
+      const bunGlobal = globalThis as any;
+      if (bunGlobal.Bun && bunGlobal.Bun.file) {
+        const file = bunGlobal.Bun.file(filePath);
+        fileContent = await file.text();
+      } else {
+        // Fallback to fs/promises
+        const fs = await import('fs/promises');
+        fileContent = await fs.readFile(filePath, 'utf8');
+      }
+    } catch {
+      // Double fallback to standard fs
+      const fs = await import('fs/promises');
+      fileContent = await fs.readFile(filePath, 'utf8');
+    }
 
     // Parse the content based on the file extension
+    let config: Config;
     if (ext === '.json') {
-      return JSON.parse(fileContent);
+      config = JSON.parse(fileContent);
     } else if (ext === '.yml' || ext === '.yaml') {
-      return yaml.load(fileContent) as Record<string, any>;
+      try {
+        const parsed = yaml.load(fileContent);
+        config = (parsed as Config) || {};
+      } catch {
+        throw new Error(`ファイルのYAML形式が無効です: ${filePath}`);
+      }
     } else {
-      throw new Error(`Unsupported file format: ${ext}. Use .json, .yml, or .yaml files.`);
+      throw new Error(
+        `サポートされていないファイル形式: ${ext}. .json, .yml, または .yaml ファイルを使用してください。`
+      );
     }
+
+    // Validate the configuration
+    if (typeof config !== 'object' || config === null) {
+      throw new Error(`設定ファイルは有効なオブジェクトである必要があります: ${filePath}`);
+    }
+
+    return config;
   } catch (error) {
-    // Handle common errors
+    // Handle common errors with Japanese messages
     if (error instanceof Error) {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-        throw new Error(`Configuration file not found: ${filePath}`);
+        throw new Error(`設定ファイルが見つかりません: ${filePath}`);
       } else if (error.name === 'SyntaxError') {
-        throw new Error(`Invalid JSON format in file: ${filePath}`);
-      } else if (error.toString().includes('JS-YAML')) {
-        throw new Error(`Invalid YAML format in file: ${filePath}`);
+        throw new Error(`ファイルのJSON形式が無効です: ${filePath}`);
       }
     }
 
@@ -56,23 +101,14 @@ export const loadConfig = async (filePath?: string): Promise<Record<string, any>
  * @param fileConfig - Configuration from file
  * @returns Merged configuration
  */
-export const mergeConfig = (
-  cliArgs: Record<string, any>,
-  fileConfig: Record<string, any>
-): Record<string, any> => {
-  // Deep clone the file config to avoid modifying the original
-  const mergedConfig = { ...fileConfig };
-
-  console.debug(
-    `Before merge - fileConfig delayMs: ${fileConfig.delayMs}, cliArgs delayMs: ${cliArgs.delayMs}`
-  );
+export const mergeConfig = (cliArgs: Record<string, any>, fileConfig: Config): Config => {
+  // Create a shallow copy of the file config to avoid modifying the original
+  const mergedConfig: Config = { ...fileConfig };
 
   // Check if delayMs was explicitly set in CLI or is using the default value
   const isDelayMsExplicitlySet = process.argv.some(
     arg => arg.startsWith('--delayMs=') || arg === '--delayMs'
   );
-
-  console.debug(`delayMs explicitly set in CLI: ${isDelayMsExplicitlySet}`);
 
   // Merge CLI arguments (they take precedence)
   for (const [key, value] of Object.entries(cliArgs)) {
@@ -80,15 +116,12 @@ export const mergeConfig = (
     if (key !== '_' && key !== '$0' && !key.startsWith('$')) {
       // For delayMs, if not explicitly set in CLI and available in config file, use config file value
       if (key === 'delayMs' && !isDelayMsExplicitlySet && fileConfig.delayMs !== undefined) {
-        console.debug(`Using delayMs from config: ${fileConfig.delayMs}`);
         mergedConfig[key] = fileConfig.delayMs;
-      } else {
+      } else if (value !== undefined) {
         mergedConfig[key] = value;
       }
     }
   }
-
-  console.debug(`After merge - mergedConfig delayMs: ${mergedConfig.delayMs}`);
 
   return mergedConfig;
 };

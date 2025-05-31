@@ -7,7 +7,13 @@ import { fetchUrlContent } from './fetcher';
 import { extractLinksFromHtml } from './parser';
 import { isUrlAllowed } from './filter';
 import { createLogger } from './logger';
-import { InitialUrlParams, CollectionResult, LinkRelationship, ErrorEntry, Stats } from './types';
+import type {
+  InitialUrlParams,
+  CollectionResult,
+  LinkRelationship,
+  ErrorEntry,
+  Stats,
+} from './types';
 
 /**
  * Main function to collect web links recursively
