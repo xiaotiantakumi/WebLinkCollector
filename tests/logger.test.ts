@@ -2,8 +2,8 @@
  * Tests for the logging module
  */
 
-const { createLogger } = require('../src/logger');
-const { describe, it, beforeEach, afterEach, expect } = require('@jest/globals');
+import { createLogger } from '../src/logger';
+import { describe, it, beforeEach, afterEach, expect, mock } from 'bun:test';
 
 describe('createLogger', () => {
   // Save the original console methods to restore later
@@ -14,12 +14,24 @@ describe('createLogger', () => {
     error: console.error,
   };
 
+  // Create mocks for console methods
+  const mockDebug = mock(() => {});
+  const mockInfo = mock(() => {});
+  const mockWarn = mock(() => {});
+  const mockError = mock(() => {});
+
   beforeEach(() => {
     // Mock console methods
-    console.debug = jest.fn();
-    console.info = jest.fn();
-    console.warn = jest.fn();
-    console.error = jest.fn();
+    console.debug = mockDebug as any;
+    console.info = mockInfo as any;
+    console.warn = mockWarn as any;
+    console.error = mockError as any;
+
+    // Clear mocks
+    mockDebug.mockClear();
+    mockInfo.mockClear();
+    mockWarn.mockClear();
+    mockError.mockClear();
   });
 
   afterEach(() => {
@@ -38,10 +50,10 @@ describe('createLogger', () => {
     logger.warn('Warning message');
     logger.error('Error message');
 
-    expect(console.debug).toHaveBeenCalledWith('[DEBUG] Debug message');
-    expect(console.info).toHaveBeenCalledWith('[INFO] Info message');
-    expect(console.warn).toHaveBeenCalledWith('[WARN] Warning message');
-    expect(console.error).toHaveBeenCalledWith('[ERROR] Error message');
+    expect(mockDebug).toHaveBeenCalledWith('[DEBUG] Debug message');
+    expect(mockInfo).toHaveBeenCalledWith('[INFO] Info message');
+    expect(mockWarn).toHaveBeenCalledWith('[WARN] Warning message');
+    expect(mockError).toHaveBeenCalledWith('[ERROR] Error message');
   });
 
   it('logs messages for info level and above when level is info', () => {
@@ -52,10 +64,10 @@ describe('createLogger', () => {
     logger.warn('Warning message');
     logger.error('Error message');
 
-    expect(console.debug).not.toHaveBeenCalled();
-    expect(console.info).toHaveBeenCalledWith('[INFO] Info message');
-    expect(console.warn).toHaveBeenCalledWith('[WARN] Warning message');
-    expect(console.error).toHaveBeenCalledWith('[ERROR] Error message');
+    expect(mockDebug).not.toHaveBeenCalled();
+    expect(mockInfo).toHaveBeenCalledWith('[INFO] Info message');
+    expect(mockWarn).toHaveBeenCalledWith('[WARN] Warning message');
+    expect(mockError).toHaveBeenCalledWith('[ERROR] Error message');
   });
 
   it('logs messages for warn level and above when level is warn', () => {
@@ -66,10 +78,10 @@ describe('createLogger', () => {
     logger.warn('Warning message');
     logger.error('Error message');
 
-    expect(console.debug).not.toHaveBeenCalled();
-    expect(console.info).not.toHaveBeenCalled();
-    expect(console.warn).toHaveBeenCalledWith('[WARN] Warning message');
-    expect(console.error).toHaveBeenCalledWith('[ERROR] Error message');
+    expect(mockDebug).not.toHaveBeenCalled();
+    expect(mockInfo).not.toHaveBeenCalled();
+    expect(mockWarn).toHaveBeenCalledWith('[WARN] Warning message');
+    expect(mockError).toHaveBeenCalledWith('[ERROR] Error message');
   });
 
   it('logs only error messages when level is error', () => {
@@ -80,10 +92,10 @@ describe('createLogger', () => {
     logger.warn('Warning message');
     logger.error('Error message');
 
-    expect(console.debug).not.toHaveBeenCalled();
-    expect(console.info).not.toHaveBeenCalled();
-    expect(console.warn).not.toHaveBeenCalled();
-    expect(console.error).toHaveBeenCalledWith('[ERROR] Error message');
+    expect(mockDebug).not.toHaveBeenCalled();
+    expect(mockInfo).not.toHaveBeenCalled();
+    expect(mockWarn).not.toHaveBeenCalled();
+    expect(mockError).toHaveBeenCalledWith('[ERROR] Error message');
   });
 
   it('logs no messages when level is none', () => {
@@ -94,10 +106,10 @@ describe('createLogger', () => {
     logger.warn('Warning message');
     logger.error('Error message');
 
-    expect(console.debug).not.toHaveBeenCalled();
-    expect(console.info).not.toHaveBeenCalled();
-    expect(console.warn).not.toHaveBeenCalled();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(mockDebug).not.toHaveBeenCalled();
+    expect(mockInfo).not.toHaveBeenCalled();
+    expect(mockWarn).not.toHaveBeenCalled();
+    expect(mockError).not.toHaveBeenCalled();
   });
 
   it('includes additional arguments in log messages', () => {
@@ -106,6 +118,6 @@ describe('createLogger', () => {
 
     logger.debug('Debug message', additionalData);
 
-    expect(console.debug).toHaveBeenCalledWith('[DEBUG] Debug message', additionalData);
+    expect(mockDebug).toHaveBeenCalledWith('[DEBUG] Debug message', additionalData);
   });
 });

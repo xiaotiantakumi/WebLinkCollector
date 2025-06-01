@@ -1,6 +1,6 @@
 {
   "name": "web-link-collector",
-  "version": "1.0.1",
+  "version": "1.0.5",
   "description": "A library and CLI tool to recursively collect links from a given initial URL and output them as structured data",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -15,25 +15,29 @@
     "README-ja.md"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "bun build src/index.ts --outdir dist/src --target node --format esm && bun build bin/web-link-collector.ts --outdir dist/bin --target node --format esm && tsc --declaration --emitDeclarationOnly",
     "postbuild": "chmod +x dist/bin/web-link-collector.js",
-    "test": "jest --testPathIgnorePatterns=\"tests/cli\"",
-    "test:core": "jest tests/filter.test.ts tests/logger.test.ts tests/parser.test.ts tests/fetcher.test.ts",
-    "start": "node dist/bin/web-link-collector.js",
+    "test": "bun test --testPathIgnorePatterns=\"tests/cli\"",
+    "test:core": "bun test tests/filter.test.ts tests/logger.test.ts tests/parser.test.ts tests/fetcher.test.ts",
+    "dev": "bun run bin/web-link-collector.ts",
+    "start": "bun run dist/bin/web-link-collector.js",
     "prepare": "husky",
-    "prepublishOnly": "npm run check && npm run build",
+    "prepublishOnly": "bun run check && bun run build",
     "postversion": "git push && git push --tags",
-    "lint": "eslint . --ext .ts",
-    "lint:fix": "eslint . --ext .ts --fix",
-    "format": "prettier --write 'src/**/*.ts' 'bin/**/*.ts' 'tests/**/*.ts'",
-    "check": "npm run lint && npm run test:core"
+    "lint": "bunx eslint . --ext .ts",
+    "lint:fix": "bunx eslint . --ext .ts --fix",
+    "format": "bunx prettier --write 'src/**/*.ts' 'bin/**/*.ts' 'tests/**/*.ts'",
+    "tsc": "tsc",
+    "check": "bun run lint && bun run test:core",
+    "clean": "rm -rf dist"
   },
   "keywords": [
     "web",
     "link",
     "crawler",
     "collector",
-    "cli"
+    "cli",
+    "bun"
   ],
   "author": "xiaotiantakumi",
   "license": "MIT",
@@ -43,12 +47,14 @@
     "yargs": "^17.7.2"
   },
   "devDependencies": {
+    "@types/bun": "^1.2.15",
     "@types/jest": "^29.5.5",
     "@types/js-yaml": "^4.0.6",
     "@types/node": "^20.8.2",
     "@types/yargs": "^17.0.26",
     "@typescript-eslint/eslint-plugin": "^8.32.0",
     "@typescript-eslint/parser": "^8.32.0",
+    "bun": "^1.2.14",
     "eslint": "^9.26.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-jest": "^28.11.0",
@@ -69,6 +75,10 @@
   },
   "homepage": "https://github.com/xiaotiantakumi/WebLinkCollector#readme",
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=14.0.0",
+    "bun": ">=1.0.0"
+  },
+  "runtime": {
+    "bun": ">=1.0.0"
   }
 }

@@ -1,15 +1,15 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 
 /**
  * WebLinkCollector CLI Tool
  * Main executable script for the CLI interface.
+ * Optimized for Bun runtime with enhanced performance.
  */
 
-import fs from 'fs/promises';
 import { parseCliArgs } from '../src/cli/args';
 import { loadConfig, mergeConfig } from '../src/cli/configLoader';
 import { collectLinks } from '../src/index';
-import { FilterConditions, LogLevel } from '../src/types';
+import type { FilterConditions, LogLevel } from '../src/types';
 import { createLogger } from '../src/logger';
 
 /**
@@ -37,9 +37,35 @@ const formatAsText = (results: any): string => {
 };
 
 /**
+ * Write file using Bun's optimized file operations
+ * @param filePath - Path to write the file
+ * @param content - Content to write
+ */
+const writeFileOptimized = async (filePath: string, content: string): Promise<void> => {
+  // Use Bun's write function if available, fallback to fs/promises
+  try {
+    // Type assertion for Bun global
+    const bunGlobal = globalThis as any;
+    if (bunGlobal.Bun && bunGlobal.Bun.write) {
+      await bunGlobal.Bun.write(filePath, content);
+    } else {
+      const fs = await import('fs/promises');
+      await fs.writeFile(filePath, content);
+    }
+  } catch {
+    // Fallback to standard fs if Bun.write fails
+    const fs = await import('fs/promises');
+    await fs.writeFile(filePath, content);
+  }
+};
+
+/**
  * Main CLI function
  */
-const main = async () => {
+const main = async (): Promise<void> => {
+  // Use Date.now() for better compatibility
+  const startTime = Date.now();
+
   try {
     // Parse command line arguments
     const cliArgs = await parseCliArgs();
@@ -51,12 +77,12 @@ const main = async () => {
     let config = {};
     if (cliArgs.configFile) {
       try {
-        logger.info(`Loading configuration from file: ${cliArgs.configFile}`);
+        logger.info(`設定ファイルを読み込み中: ${cliArgs.configFile}`);
         config = await loadConfig(cliArgs.configFile);
-        logger.debug(`Loaded config from file: ${JSON.stringify(config, null, 2)}`);
+        logger.debug(`ファイルから設定を読み込みました: ${JSON.stringify(config, null, 2)}`);
       } catch (error) {
         logger.error(
-          `Failed to load configuration file: ${error instanceof Error ? error.message : String(error)}`
+          `設定ファイルの読み込みに失敗しました: ${error instanceof Error ? error.message : String(error)}`
         );
         process.exit(1);
       }
@@ -64,7 +90,7 @@ const main = async () => {
 
     // Merge CLI arguments with file configuration
     const mergedConfig = mergeConfig(cliArgs, config);
-    logger.debug(`Merged config: ${JSON.stringify(mergedConfig, null, 2)}`);
+    logger.debug(`マージされた設定: ${JSON.stringify(mergedConfig, null, 2)}`);
 
     // Parse filters if provided as a JSON string
     let filters: FilterConditions | undefined;
@@ -74,14 +100,16 @@ const main = async () => {
           filters = JSON.parse(mergedConfig.filters);
         } catch (error) {
           logger.error(
-            `Invalid JSON format for filters: ${error instanceof Error ? error.message : String(error)}`
+            `フィルタのJSON形式が無効です: ${error instanceof Error ? error.message : String(error)}`
           );
           process.exit(1);
         }
       } else if (typeof mergedConfig.filters === 'object') {
         filters = mergedConfig.filters as FilterConditions;
       } else {
-        logger.error(`Invalid type for filters: Expected a JSON string or an object.`);
+        logger.error(
+          'フィルタの形式が無効です: JSON文字列またはオブジェクトである必要があります。'
+        );
         process.exit(1);
       }
     }
@@ -89,12 +117,12 @@ const main = async () => {
     // Load filters from file if provided
     if (mergedConfig.filtersFile) {
       try {
-        logger.info(`Loading filters from file: ${mergedConfig.filtersFile}`);
+        logger.info(`フィルタファイルを読み込み中: ${mergedConfig.filtersFile}`);
         const filtersFromFile = await loadConfig(mergedConfig.filtersFile);
         filters = filtersFromFile.filters || filtersFromFile;
       } catch (error) {
         logger.error(
-          `Failed to load filters file: ${error instanceof Error ? error.message : String(error)}`
+          `フィルタファイルの読み込みに失敗しました: ${error instanceof Error ? error.message : String(error)}`
         );
         process.exit(1);
       }
@@ -102,19 +130,23 @@ const main = async () => {
 
     // Prepare options for the collector
     const options = {
-      depth: mergedConfig.depth,
+      depth: mergedConfig.depth ?? 1,
       filters,
       selector: mergedConfig.selector,
-      delayMs: mergedConfig.delayMs,
+      delayMs: mergedConfig.delayMs ?? 1000,
       logLevel: mergedConfig.logLevel as LogLevel,
     };
 
-    logger.info(
-      `Starting link collection from ${mergedConfig.initialUrl} with depth ${options.depth}`
-    );
+    logger.info(`${mergedConfig.initialUrl} からリンク収集を開始します（深度: ${options.depth}）`);
 
     // デバッグログにオプションを表示
-    logger.debug(`Collection options: ${JSON.stringify(options, null, 2)}`);
+    logger.debug(`収集オプション: ${JSON.stringify(options, null, 2)}`);
+
+    // Validate initialUrl exists
+    if (!mergedConfig.initialUrl) {
+      logger.error('initialUrl が設定されていません');
+      process.exit(1);
+    }
 
     // Collect links
     const results = await collectLinks(mergedConfig.initialUrl, options);
@@ -130,20 +162,33 @@ const main = async () => {
 
     // Output the results
     if (mergedConfig.output) {
-      // Write to file
-      logger.info(`Writing results to file: ${mergedConfig.output}`);
-      await fs.writeFile(mergedConfig.output, output);
+      // Write to file using optimized function
+      logger.info(`結果をファイルに出力中: ${mergedConfig.output}`);
+      await writeFileOptimized(mergedConfig.output, output);
     } else {
       // Write to stdout
       process.stdout.write(output);
     }
 
-    logger.info('Link collection completed successfully');
+    const endTime = Date.now();
+    logger.info(`リンク収集が正常に完了しました（処理時間: ${endTime - startTime}ms）`);
   } catch (error) {
-    console.error('Error:', error instanceof Error ? error.message : String(error));
+    console.error('エラー:', error instanceof Error ? error.message : String(error));
     process.exit(1);
   }
 };
 
-// Run the main function
-main();
+// Export for testing purposes
+export { main, formatAsText };
+
+// Run the main function only if this is the main module
+const metaUrl = typeof import.meta !== 'undefined' ? import.meta.url : '';
+const isMainModule =
+  metaUrl.endsWith('/web-link-collector.ts') || process.argv[1]?.endsWith('/web-link-collector.ts');
+
+if (isMainModule) {
+  main().catch(error => {
+    console.error('致命的エラー:', error);
+    process.exit(1);
+  });
+}

@@ -4,7 +4,7 @@
  */
 
 import { URL } from 'url';
-import { FilterConditions } from './types';
+import type { FilterConditions } from './types';
 
 // Common paths to exclude by default (both exact matches and paths containing these)
 const DEFAULT_EXCLUDED_PATHS = [

@@ -1,0 +1,171 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+## Bun test creation guide.
+
+## Basic rules
+
+### Import.
+- Use `bun:test` (do not use `@jest/globals`)
+- Maintain ESM syntax (do not use CommonJS require syntax)
+
+```typescript.
+import { describe, it, beforeEach, expect, mock } from ‘bun:test’;.
+```
+
+### Mock creation.
+- Cannot use `jest.mock()`.
+- Use Bun's `mock()` function.
+- Mocking for fetch uses the following pattern:
+
+```typescript
+// Use Bun's mock function
+const mockFetch = mock(() => Promise.resolve(new Response()));.
+
+describe(‘test’, () => {
+  beforeEach(() => {
+    global.fetch = mockFetch;.
+    mockFetch.mockClear();
+  });
+  
+  it(‘TestCase’, async () => {
+    const mockResponse = new Response(html, {
+      status: 200,
+      statusText: ‘OK’,.
+      headers: { ‘content-type’: ‘text/html’ },.
+    });
+    
+    // url property set afterwards
+    Object.defineProperty(mockResponse, ‘url’, {
+      value: ‘https://example.com’,.
+      writable: false,.
+    });
+    
+    mockFetch.mockResolvedValue(mockResponse);
+    
+    // Test execution
+    const result = await targetFunction();.
+    
+    // Assertion.
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+});
+````
+
+## Common problems and solutions.
+
+### TypeScript type error.
+- ``Module ‘bun:test’ or corresponding type declaration not found``
+- Often has no effect on actual test execution.
+- Can be avoided by setting `skipLibCheck: true`.
+
+### Setting the url of the Response object
+- Response constructor does not accept `url` property
+- Use `Object.defineProperty()` to set it afterwards.
+
+### Mock call confirmation.
+- `toHaveBeenCalledTimes()` can be used
+- `toHaveBeenCalledWith()` can also be used.
+
+## Reference to success patterns
+
+Refer to existing `tests/cli/configLoader.test.ts`:
+- `bun:test` is used correctly
+- Filesystem mocks are properly implemented
+- Well tested error handling.
+
+## TypeScript configuration
+
+In tsconfig.json for testing, set the following:
+
+``json.
+{
+  ‘extends": ’... /tsconfig.json’,.
+  ‘compilerOptions": {
+    ‘verbatimModuleSyntax": false,.
+    ‘module": “ESNext”,.
+    ‘moduleResolution": “bundler”,.
+    ‘allowImportingTsExtensions": false,.
+    ‘skipLibCheck": true
+  },.
+  ‘include‘: [’. /**/*"],.
+  ‘exclude‘: [’node_modules"]
+}
+```
+
+## Run test.
+
+````bash
+## Run specific test files
+bun test tests/fetcher.test.ts
+
+# Run all tests ```bash
+bun test
+```
+
+## Patterns to avoid.
+
+### ❌ Jest-style mocking.
+```typescript
+// this doesn't work
+jest.mock('. /src/fetcher', () => ({...})) ;
+global.fetch = jest.fn();.
+```
+
+### ❌ Importing CommonJS format.
+```typescript.
+// this doesn't work.
+const { describe, it } = require(‘@jest/globals’);
+```
+
+### ❌ Complex mock implementations.
+```typescript‘’
+// this is unnecessarily complex
+const mockFetch = {
+  mockResolvedValue: (value) => { /* complex implementation */ },.
+  calls: [],.
+  // ...
+}; }
+```
+
+## ✅ Recommended Pattern.
+
+### Simple mock.
+````typescript.
+const mockFetch = mock(() => Promise.resolve(new Response()));.
+```
+
+### Clear test case.
+```typescript
+it(‘handles HTTP errors and returns null’, async () => {
+  const mockResponse = new Response(null, { status: 404 });
+  mockFetch.mockResolvedValue(mockResponse);
+  
+  const result = await fetchUrlContent(‘https://example.com/notfound’, 0);
+  
+  expect(result).toBeNull();
+  expect(mockFetch).toHaveBeenCalledTimes(1);
+});
+```
+
+## Notes.
+
+1. even if a TypeScript type error occurs, the actual test run may succeed
+2. Bun's `mock()` may work differently from Jest
+3. when migrating from other testing frameworks, focus on fixing mock parts
+4. it is most reliable to refer to existing successful test files
+
+## Troubleshooting.
+
+### If the test fails.
+1. check that the mock is set up correctly
+2. check if `mockClear()` is called with `beforeEach`.
+3. check if the Response object is set up correctly.
+
+### If a type error occurs. 1.
+1. set `skipLibCheck: true` 2.
+2. check correct import from `bun:test
+3. check if the test tsconfig.json is applied
+

@@ -3,7 +3,7 @@
  */
 
 import { parseCliArgs } from '../../src/cli/args';
-import { jest, describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach, spyOn, mock } from 'bun:test';
 import * as configLoader from '../../src/cli/configLoader';
 
 // Helper function to simulate process.argv
@@ -24,29 +24,27 @@ const mockProcessArgv = (args: string[]) => {
 };
 
 // Mock console.error to capture error messages from yargs
-const mockConsoleError = (): jest.Mock => {
-  return jest.spyOn(console, 'error').mockImplementation(jest.fn()) as jest.Mock;
-};
+const mockConsoleError = mock(() => {});
 
 describe('parseCliArgs', () => {
   let restoreArgv: () => void;
   let loadConfigSpy: any;
   let originalNodeEnv: string | undefined;
+  let originalConsoleError: any;
 
   beforeEach(() => {
     // テスト環境であることを設定
     originalNodeEnv = process.env.NODE_ENV;
     process.env.NODE_ENV = 'test';
 
-    // Reset mocks for each test
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
-
     // Suppress error output
-    mockConsoleError();
+    originalConsoleError = console.error;
+    console.error = mockConsoleError as any;
+    mockConsoleError.mockClear();
 
     // モックの設定
-    loadConfigSpy = jest.spyOn(configLoader, 'loadConfig').mockImplementation(async () => ({}));
+    loadConfigSpy = spyOn(configLoader, 'loadConfig');
+    loadConfigSpy.mockImplementation(async () => ({}));
   });
 
   afterEach(() => {
@@ -57,6 +55,9 @@ describe('parseCliArgs', () => {
 
     // 環境変数を元に戻す
     process.env.NODE_ENV = originalNodeEnv;
+
+    // Restore console.error
+    console.error = originalConsoleError;
 
     // スパイの復元
     loadConfigSpy.mockRestore();
@@ -108,7 +109,7 @@ describe('parseCliArgs', () => {
 
   it('should throw an error if initialUrl is missing', async () => {
     restoreArgv = mockProcessArgv([]);
-    await expect(parseCliArgs()).rejects.toThrow('initialUrl is required');
+    await expect(parseCliArgs()).rejects.toThrow('initialUrlは必須です');
   });
 
   it('should handle invalid depth value', async () => {
@@ -145,6 +146,6 @@ describe('parseCliArgs', () => {
     loadConfigSpy.mockRejectedValue(new Error('File not found'));
 
     restoreArgv = mockProcessArgv(['--configFile', 'nonexistent.yaml']);
-    await expect(parseCliArgs()).rejects.toThrow('Error loading config file');
+    await expect(parseCliArgs()).rejects.toThrow('設定ファイル読み込みエラー');
   });
 });

@@ -5,7 +5,7 @@
 
 import * as cheerio from 'cheerio';
 import { URL } from 'url';
-import { Logger } from './types';
+import type { Logger } from './types';
 import { isUrlInQueryParams } from './filter';
 
 /**
