@@ -5,8 +5,8 @@
  */
 
 import { URL } from 'url';
-import { createLogger, type Logger } from './logger';
-import type { LogLevel } from './types';
+import { createLogger } from './logger';
+import type { Logger, LogLevel } from './types';
 
 /**
  * Delay execution for a specified number of milliseconds using Bun optimizations
