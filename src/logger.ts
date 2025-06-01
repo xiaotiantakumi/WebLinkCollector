@@ -4,17 +4,7 @@
  * Optimized for Bun runtime with enhanced performance.
  */
 
-import type { LogLevel } from './types';
-
-/**
- * Interface for a logger object with optimized signatures
- */
-export interface Logger {
-  debug: (message: string, ...args: any[]) => void;
-  info: (message: string, ...args: any[]) => void;
-  warn: (message: string, ...args: any[]) => void;
-  error: (message: string, ...args: any[]) => void;
-}
+import type { LogLevel, Logger } from './types';
 
 /**
  * Map of log levels to their priority (higher number = higher priority)
