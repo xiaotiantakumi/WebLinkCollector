@@ -1,0 +1,50 @@
+{
+  "name": "weblinkcolector-typescript-example",
+  "version": "1.0.0",
+  "description": "TypeScript example project using WebLinkCollector with Bun",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "bun run src/index.ts",
+    "start": "bun run dist/index.js",
+    "advanced": "bun run src/advanced.ts",
+    "lint": "bunx eslint . --ext .ts",
+    "lint:fix": "bunx eslint . --ext .ts --fix",
+    "format": "bunx prettier --write 'src/**/*.ts'",
+    "tsc": "tsc --noEmit",
+    "check": "bun run lint && bun run tsc",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "web-link-collector": "^1.0.6"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.26.0",
+    "@typescript-eslint/eslint-plugin": "^8.32.0",
+    "@typescript-eslint/parser": "^8.32.0",
+    "bun": "^1.2.14",
+    "eslint": "^9.26.0",
+    "eslint-config-prettier": "^10.1.5",
+    "prettier": "^3.5.3",
+    "typescript": "^5.2.2"
+  },
+  "keywords": [
+    "web-scraping",
+    "link-extraction",
+    "crawler",
+    "typescript",
+    "bun",
+    "example"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0",
+    "bun": ">=1.0.0"
+  },
+  "runtime": {
+    "bun": ">=1.0.0"
+  }
+}

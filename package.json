@@ -1,6 +1,6 @@
 {
   "name": "web-link-collector",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "A library and CLI tool to recursively collect links from a given initial URL and output them as structured data",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -15,7 +15,7 @@
     "README-ja.md"
   ],
   "scripts": {
-    "build": "bun build src/index.ts --outdir dist/src --target node --format esm && bun build bin/web-link-collector.ts --outdir dist/bin --target node --format esm && tsc --declaration --emitDeclarationOnly",
+    "build": "bun build src/index.ts --outdir dist/src --target node --format esm && bun build bin/web-link-collector.ts --outdir dist/bin --target node --format esm && tsc -p tsconfig.build.json",
     "postbuild": "chmod +x dist/bin/web-link-collector.js",
     "test": "bun test --testPathIgnorePatterns=\"tests/cli\"",
     "test:core": "bun test tests/filter.test.ts tests/logger.test.ts tests/parser.test.ts tests/fetcher.test.ts",
@@ -44,6 +44,7 @@
   "dependencies": {
     "cheerio": "^1.0.0-rc.12",
     "js-yaml": "^4.1.0",
+    "p-limit": "^6.2.0",
     "yargs": "^17.7.2"
   },
   "devDependencies": {

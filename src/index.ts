@@ -51,10 +51,46 @@ export const collectLinks = async (
   }
 };
 
-// Export all public types
+// Export all public types (backward compatibility)
 export * from './types';
 
-// Export utility functions for external use
+// Export utility functions for external use (backward compatibility)
 export { createLogger } from './logger';
 export { extractLinksFromHtml } from './parser';
 export { isUrlAllowed, isUrlInQueryParams } from './filter';
+
+// Export new enhanced functionality
+export {
+  collect,
+  collectMultiple,
+  collectWithRetry,
+  collectDocs,
+  collectGitHub,
+  collectBlog,
+  collectEcommerce,
+  collectInternal,
+  collectByKeywords,
+  collectFromDomains,
+} from './convenience';
+
+export { FILTER_PRESETS, getPresetFilters, getAvailablePresets, combinePresets } from './presets';
+
+export {
+  FilterBuilder,
+  createFilter,
+  createFilterFromPreset,
+  createFilterFromPresets,
+  createDomainFilter,
+  createPathFilter,
+  createKeywordFilter,
+  createRegexFilter,
+} from './builder';
+
+export {
+  calculateStatistics,
+  exportResults,
+  filterResultsByDomain,
+  getTopDomains,
+  analyzeCrawlEfficiency,
+  mergeCollectionResults,
+} from './utils';

@@ -94,3 +94,53 @@ export interface CollectionResult {
   errors: ErrorEntry[];
   stats: Stats;
 }
+
+/**
+ * Options for the main collection function (re-exported for convenience)
+ */
+export interface CollectionOptions {
+  depth: number;
+  filters?: FilterConditions;
+  selector?: string;
+  element?: string;
+  delayMs?: number;
+  logLevel?: LogLevel;
+}
+
+/**
+ * Enhanced collection options with presets and additional features
+ */
+export interface EnhancedCollectionOptions {
+  depth?: number;
+  filters?: FilterConditions;
+  selector?: string;
+  element?: string;
+  delayMs?: number;
+  logLevel?: LogLevel;
+  preset?: string;
+  additionalFilters?: FilterConditions;
+  includeStatistics?: boolean;
+  userAgent?: string;
+  timeout?: number;
+}
+
+/**
+ * Detailed statistics about the collection process
+ */
+export interface CollectionStatistics {
+  totalLinks: number;
+  uniqueLinks: number;
+  internalLinks: number;
+  externalLinks: number;
+  linksByDomain: Record<string, number>;
+  linksByDepth: Record<number, number>;
+  averageLinksPerPage: number;
+  crawlEfficiency: number; // totalCollected / totalScanned
+}
+
+/**
+ * Enhanced collection result with optional statistics
+ */
+export interface EnhancedCollectionResult extends CollectionResult {
+  statistics?: CollectionStatistics;
+}
