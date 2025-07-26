@@ -1,0 +1,23 @@
+{
+  "name": "weblinkcolector-example",
+  "version": "1.0.0",
+  "description": "Example project using WebLinkCollector",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "install-deps": "npm install"
+  },
+  "dependencies": {
+    "weblinkcolector": "^1.0.0"
+  },
+  "keywords": [
+    "web-scraping",
+    "link-extraction",
+    "crawler",
+    "example"
+  ],
+  "author": "",
+  "license": "MIT"
+}
