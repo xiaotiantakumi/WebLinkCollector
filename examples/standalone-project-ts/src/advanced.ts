@@ -1,6 +1,11 @@
-import { collectLinks, type CollectionOptions, type CollectionResult } from 'web-link-collector';
+import { 
+  collectLinks, 
+  type CollectionOptions, 
+  type CollectionResult,
+  FILTER_PRESETS
+} from 'web-link-collector';
 import { writeFileSync } from 'fs';
-import { FILTER_PRESETS, type DetailedCrawlResult, type CrawlError } from './types.js';
+import { type DetailedCrawlResult, type CrawlError } from './types.js';
 
 // 高度な型安全なクローラークラス
 class AdvancedWebCrawler {
