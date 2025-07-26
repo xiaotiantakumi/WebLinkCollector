@@ -88,8 +88,8 @@ export const collectWebLinks = async (params: InitialUrlParams): Promise<Collect
     sourceUrl: string | null
   ): Promise<void> => {
     // 各リンクの処理を開始する前に、リクエスト間のディレイを適用
-    // 初回（depth=0）以外のすべてのリクエストに適用
-    if (currentDepth > 0 && delayMs > 0) {
+    // 深度1の場合は1ページのみなのでディレイは不要、深度2以上でのみ適用
+    if (currentDepth > 0 && maxDepth > 1 && delayMs > 0) {
       logger.debug(`Applying delay of ${delayMs}ms before processing ${url}`);
       await new Promise(resolve => setTimeout(resolve, delayMs));
     }
@@ -114,6 +114,13 @@ export const collectWebLinks = async (params: InitialUrlParams): Promise<Collect
     if (allowedByFilter) {
       allCollectedUrls.add(url);
       stats.totalUrlsCollected++;
+
+      // Progress logging every 10 collected URLs
+      if (stats.totalUrlsCollected % 10 === 0) {
+        logger.info(
+          `Progress: Collected ${stats.totalUrlsCollected} URLs (scanned ${stats.totalUrlsScanned}, depth ${currentDepth})`
+        );
+      }
 
       // Record link relationship if there's a source
       if (sourceUrl) {

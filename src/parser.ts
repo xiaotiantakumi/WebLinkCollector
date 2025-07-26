@@ -89,8 +89,15 @@ export const extractLinksFromHtml = (
 
     if (selectedElements.length > 0) {
       // セレクタが直接a要素を選択しているかチェック
-      if (cssSelector.includes('a') || cssSelector.includes('A')) {
-        // セレクタが直接aタグを指定している場合は、選択された要素自体を使用
+      // selectedElements の各要素が実際に a タグかどうかを確認
+      const firstElement = selectedElements.first();
+      const tagName = firstElement.prop('tagName');
+      const isDirectATag = firstElement.is('a');
+
+      log.debug(`Selected element tag: ${tagName}, isATag: ${isDirectATag}`);
+
+      if (isDirectATag) {
+        // セレクタが直接aタグを選択している場合は、選択された要素自体を使用
         linkElements = selectedElements;
         log.debug(`Using ${linkElements.length} directly selected link elements`);
       } else {
