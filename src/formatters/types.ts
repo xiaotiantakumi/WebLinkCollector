@@ -3,7 +3,7 @@
  * Defines the contract for implementing format converters following SOLID principles.
  */
 
-import type { CollectionResult } from '../types.js';
+import type { CollectionResult } from '../types';
 
 /**
  * Base interface for all format converters

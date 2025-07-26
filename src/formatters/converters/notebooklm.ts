@@ -3,8 +3,8 @@
  * Converts CollectionResult URLs to NotebookLM-compatible format
  */
 
-import type { CollectionResult } from '../../types.js';
-import type { FormatConverter, NotebookLMOptions } from '../types.js';
+import type { CollectionResult } from '../../types';
+import type { FormatConverter, NotebookLMOptions } from '../types';
 
 /**
  * Converts URLs to NotebookLM format

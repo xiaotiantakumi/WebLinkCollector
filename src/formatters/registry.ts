@@ -3,7 +3,7 @@
  * Manages registration and retrieval of format converters
  */
 
-import type { FormatConverter, ConverterRegistry } from './types.js';
+import type { FormatConverter, ConverterRegistry } from './types';
 
 /**
  * Default implementation of ConverterRegistry

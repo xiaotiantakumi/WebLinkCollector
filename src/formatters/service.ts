@@ -3,14 +3,14 @@
  * Provides high-level API for format conversion operations
  */
 
-import type { CollectionResult } from '../types.js';
+import type { CollectionResult } from '../types';
 import {
   UnsupportedFormatError,
   ConversionError,
   type FormatService,
   type ConverterRegistry,
-} from './types.js';
-import { DefaultConverterRegistry } from './registry.js';
+} from './types';
+import { DefaultConverterRegistry } from './registry';
 
 /**
  * Default implementation of FormatService
@@ -76,7 +76,7 @@ export class DefaultFormatService implements FormatService {
    * Register a new converter
    * @param converter The converter to register
    */
-  registerConverter<TOptions>(converter: import('./types.js').FormatConverter<TOptions>): void {
+  registerConverter<TOptions>(converter: import('./types').FormatConverter<TOptions>): void {
     this.registry.register(converter);
   }
 }

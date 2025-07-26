@@ -103,11 +103,11 @@ export {
   NotebookLMConverter,
   UnsupportedFormatError,
   ConversionError,
-} from './formatters/index.js';
+} from './formatters/index';
 
 export type {
   FormatConverter,
   NotebookLMOptions,
   ConverterRegistry,
   FormatService,
-} from './formatters/index.js';
+} from './formatters/index';

@@ -3,4 +3,4 @@
  * Exports all available format converters
  */
 
-export { NotebookLMConverter } from './notebooklm.js';
+export { NotebookLMConverter } from './notebooklm';
