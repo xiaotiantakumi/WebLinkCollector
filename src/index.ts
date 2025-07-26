@@ -94,3 +94,20 @@ export {
   analyzeCrawlEfficiency,
   mergeCollectionResults,
 } from './utils';
+
+// Export format conversion system
+export {
+  createFormatService,
+  DefaultFormatService,
+  DefaultConverterRegistry,
+  NotebookLMConverter,
+  UnsupportedFormatError,
+  ConversionError,
+} from './formatters/index.js';
+
+export type {
+  FormatConverter,
+  NotebookLMOptions,
+  ConverterRegistry,
+  FormatService,
+} from './formatters/index.js';
