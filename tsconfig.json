@@ -26,7 +26,7 @@
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false
   },
-  "include": ["src/**/*", "bin/**/*"],
+  "include": ["src/**/*", "bin/**/*", "types/**/*"],
   "exclude": ["node_modules", "dist", "**/*.test.ts", "coverage", "tmp"],
   "ts-node": {
     "esm": true
