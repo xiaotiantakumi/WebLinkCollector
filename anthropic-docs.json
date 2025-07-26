@@ -1,0 +1,15 @@
+{
+  "initialUrl": "https://example.com",
+  "depth": 1,
+  "allCollectedUrls": ["https://example.com"],
+  "linkRelationships": [],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-07-26T10:52:13.509Z",
+    "endTime": "2025-07-26T10:52:14.005Z",
+    "durationMs": 496,
+    "totalUrlsScanned": 2,
+    "totalUrlsCollected": 1,
+    "maxDepthReached": 0
+  }
+}

@@ -116,30 +116,42 @@ CLIツールの基本的な使用方法：
 
 ```bash
 # グローバルインストールした場合
-web-link-collector --initialUrl https://example.com --depth 2
+wlc collect https://example.com --depth 2
 
-# ローカルインストールした場合はbunを使用
-bun web-link-collector --initialUrl https://example.com --depth 2
+# ローカルでの開発時
+bun run dev collect https://example.com --depth 2
 ```
 
-### CLIオプション
+### コマンド
 
-| オプション      | 説明                                                          | デフォルト |
-| --------------- | ------------------------------------------------------------- | ---------- |
-| `--initialUrl`  | リンク収集の開始URL                                           | _必須_     |
-| `--depth`       | 最大再帰深度 (0-5)                                            | 1          |
-| `--filters`     | フィルタ条件のJSON文字列                                      | なし       |
-| `--filtersFile` | フィルタ条件を含むJSONまたはYAMLファイルへのパス              | なし       |
-| `--selector`    | リンク抽出範囲を制限するCSSセレクタ（初期ページのみ）         | なし       |
-| `--element`     | リンク抽出の起点として使用するHTMLタグ名（例：main, article） | なし       |
-| `--delayMs`     | リクエスト間の遅延（ミリ秒）                                  | 1000       |
-| `--logLevel`    | ログレベル (debug, info, warn, error, none)                   | info       |
-| `--output`      | 出力ファイルパス（指定されない場合、標準出力へ出力）          | なし       |
-| `--format`      | 出力形式 (json, txt)                                          | json       |
-| `--configFile`  | JSONまたはYAML設定ファイルへのパス                            | なし       |
-| `--skipQuery`   | クエリパラメータ内のURLをスキップ                             | true       |
-| `--skipHash`    | ハッシュフラグメント内のURLをスキップ                         | true       |
-| `--help`, `-h`  | ヘルプメッセージを表示                                        | -          |
+`wlc` CLIは2つの主要なコマンドをサポートしています：
+
+#### `wlc collect <url>` - ウェブページからリンクを収集
+
+| オプション           | 説明                                                  | デフォルト |
+| -------------------- | ----------------------------------------------------- | ---------- |
+| `<url>`              | リンク収集の開始URL                                   | _必須_     |
+| `--depth`, `-d`      | 最大再帰深度 (0-5)                                    | 1          |
+| `--filters`          | フィルタ条件のJSON文字列                              | なし       |
+| `--filtersFile`      | フィルタ条件を含むJSONまたはYAMLファイルへのパス      | なし       |
+| `--selector`, `-s`   | リンク抽出範囲を制限するCSSセレクタ（初期ページのみ） | なし       |
+| `--delayMs`          | リクエスト間の遅延（ミリ秒）                          | 1000       |
+| `--logLevel`, `-l`   | ログレベル (debug, info, warn, error)                 | info       |
+| `--output`, `-o`     | 出力ファイルパス（指定されない場合、標準出力へ出力）  | なし       |
+| `--format`, `-f`     | 出力形式 (json, txt)                                  | json       |
+| `--configFile`, `-c` | JSONまたはYAML設定ファイルへのパス                    | なし       |
+| `--help`, `-h`       | ヘルプメッセージを表示                                | -          |
+
+#### `wlc format` - 収集結果を各種フォーマットに変換
+
+| オプション       | 説明                                                   | デフォルト |
+| ---------------- | ------------------------------------------------------ | ---------- |
+| `--input`, `-i`  | 入力JSONファイル（CollectionResult形式）               | _必須_     |
+| `--output`, `-o` | 出力ディレクトリ                                       | _必須_     |
+| `--format`, `-f` | 出力フォーマット（notebooklm）                         | _必須_     |
+| `--separator`    | notebooklm用：区切り文字タイプ（space または newline） | newline    |
+| `--filename`     | カスタム出力ファイル名（指定されない場合自動生成）     | なし       |
+| `--help`, `-h`   | ヘルプメッセージを表示                                 | -          |
 
 ### 使用例
 
@@ -147,70 +159,96 @@ bun web-link-collector --initialUrl https://example.com --depth 2
 
 ```bash
 # グローバルインストールした場合
-web-link-collector --initialUrl https://example.com --depth 2
+wlc collect https://example.com --depth 2
 
-# ローカルインストールした場合
-bun web-link-collector --initialUrl https://example.com --depth 2
+# ローカルでの開発時
+bun run dev collect https://example.com --depth 2
 ```
 
 指定したドメインからのリンクのみを収集：
 
 ```bash
 # グローバルインストールした場合
-web-link-collector --initialUrl https://example.com --filters '{"domain": "example.com"}'
+wlc collect https://example.com --filters '{"domain": "example.com"}'
 
-# ローカルインストールした場合
-bun web-link-collector --initialUrl https://example.com --filters '{"domain": "example.com"}'
+# ローカルでの開発時
+bun run dev collect https://example.com --filters '{"domain": "example.com"}'
 ```
 
 初期ページの特定セクションからのリンク抽出に制限：
 
 ```bash
 # グローバルインストールした場合
-web-link-collector --initialUrl https://example.com --selector ".main-content a"
+wlc collect https://example.com --selector ".main-content a"
 
-# ローカルインストールした場合
-bun web-link-collector --initialUrl https://example.com --selector ".main-content a"
+# ローカルでの開発時
+bun run dev collect https://example.com --selector ".main-content a"
 ```
 
 特定のHTML要素からのリンク抽出に制限：
 
 ```bash
 # グローバルインストールした場合
-web-link-collector --initialUrl https://example.com --element main
+wlc collect https://example.com --element main
 
-# ローカルインストールした場合
-bun web-link-collector --initialUrl https://example.com --element main
+# ローカルでの開発時
+bun run dev collect https://example.com --element main
 ```
 
 結果をテキストファイルに出力：
 
 ```bash
 # グローバルインストールした場合
-web-link-collector --initialUrl https://example.com --output results.txt --format txt
+wlc collect https://example.com --output results.txt --format txt
 
-# ローカルインストールした場合
-bun web-link-collector --initialUrl https://example.com --output results.txt --format txt
+# ローカルでの開発時
+bun run dev collect https://example.com --output results.txt --format txt
 ```
 
 クエリパラメータ内のURLのスキップを無効化：
 
 ```bash
 # グローバルインストールした場合
-web-link-collector --initialUrl https://example.com --skipQuery false
+wlc collect https://example.com --skipQuery false
 
-# ローカルインストールした場合
-bun web-link-collector --initialUrl https://example.com --skipQuery false
+# ローカルでの開発時
+bun run dev collect https://example.com --skipQuery false
 ```
 
 設定ファイルを使用：
 
 ```bash
 # グローバルインストールした場合
-web-link-collector --configFile config.yaml
+wlc collect https://example.com --configFile config.yaml
 
-# ローカルインストールした場合
-bun web-link-collector --configFile config.yaml
+# ローカルでの開発時
+bun run dev collect https://example.com --configFile config.yaml
+```
+
+### フォーマット変換の例
+
+収集結果をNotebookLM形式に変換：
+
+```bash
+wlc format --input results.json --output ./output --format notebooklm
+```
+
+スペース区切りで変換：
+
+```bash
+wlc format --input results.json --output ./output --format notebooklm --separator space
+```
+
+### 組み合わせワークフロー
+
+リンクを収集してからNotebookLM形式に変換：
+
+```bash
+# ステップ1: リンクを収集
+wlc collect https://example.com --depth 2 --output results.json
+
+# ステップ2: NotebookLM形式に変換
+wlc format --input results.json --output ./output --format notebooklm
 ```
 
 ## ライブラリ使用方法
