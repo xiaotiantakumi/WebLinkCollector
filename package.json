@@ -6,7 +6,7 @@
   "types": "dist/src/index.d.ts",
   "type": "module",
   "bin": {
-    "web-link-collector": "dist/bin/web-link-collector.js"
+    "wlc": "dist/bin/wlc.js"
   },
   "files": [
     "dist",
@@ -15,12 +15,14 @@
     "README-ja.md"
   ],
   "scripts": {
-    "build": "bun build src/index.ts --outdir dist/src --target node --format esm && bun build bin/web-link-collector.ts --outdir dist/bin --target node --format esm && tsc -p tsconfig.build.json",
-    "postbuild": "chmod +x dist/bin/web-link-collector.js",
+    "build": "bun build src/index.ts --outdir dist/src --target node --format esm && bun build bin/wlc.ts --outdir dist/bin --target node --format esm && tsc -p tsconfig.build.json",
+    "postbuild": "chmod +x dist/bin/wlc.js",
     "test": "bun test --testPathIgnorePatterns=\"tests/cli\"",
+    "test:cli": "bun test tests/cli/",
+    "test:all": "bun test",
     "test:core": "bun test tests/filter.test.ts tests/logger.test.ts tests/parser.test.ts tests/fetcher.test.ts",
-    "dev": "bun run bin/web-link-collector.ts",
-    "start": "bun run dist/bin/web-link-collector.js",
+    "dev": "bun run bin/wlc.ts",
+    "start": "bun run dist/bin/wlc.js",
     "prepare": "husky",
     "prepublishOnly": "bun run check && bun run build",
     "postversion": "git push && git push --tags",

@@ -172,90 +172,139 @@ Basic usage with the CLI tool:
 
 ```bash
 # Development mode (recommended for local usage)
-bun run dev --initialUrl https://example.com --depth 2
+bun run dev collect https://example.com --depth 2
 
 # Using built CLI
-bun run start --initialUrl https://example.com --depth 2
+bun run start collect https://example.com --depth 2
 
 # Direct execution
-bun dist/bin/web-link-collector.js --initialUrl https://example.com --depth 2
+bun dist/bin/wlc.js collect https://example.com --depth 2
 
 # Global installation (if installed globally)
-web-link-collector --initialUrl https://example.com --depth 2
+wlc collect https://example.com --depth 2
 
 # Using npx (if published to npm)
-npx web-link-collector --initialUrl https://example.com --depth 2
+npx wlc collect https://example.com --depth 2
 ```
 
-### CLI Options
+### Commands
 
-| Option          | Description                                                                      | Default    |
-| --------------- | -------------------------------------------------------------------------------- | ---------- |
-| `--initialUrl`  | The starting URL for link collection                                             | _Required_ |
-| `--depth`       | The maximum recursion depth (0-5)                                                | 1          |
-| `--filters`     | JSON string of filter conditions                                                 | None       |
-| `--filtersFile` | Path to a JSON or YAML file containing filter conditions                         | None       |
-| `--selector`    | CSS selector to limit link extraction scope (only for the initial page)          | None       |
-| `--element`     | HTML tag name to use as starting point for link extraction (e.g., main, article) | None       |
-| `--delayMs`     | Delay in milliseconds between requests (recommended: 50)                         | 1000       |
-| `--logLevel`    | Logging level (debug, info, warn, error, none)                                   | info       |
-| `--output`      | Output file path (if not specified, outputs to stdout)                           | None       |
-| `--format`      | Output format (json, txt)                                                        | json       |
-| `--configFile`  | Path to a JSON or YAML configuration file                                        | None       |
-| `--skipQuery`   | Skip URLs embedded in query parameters                                           | true       |
-| `--skipHash`    | Skip URLs embedded in hash fragments                                             | true       |
-| `--help`, `-h`  | Show help message                                                                | -          |
+The `wlc` CLI supports two main commands:
+
+#### `wlc collect <url>` - Collect links from web pages
+
+| Option               | Description                                                             | Default    |
+| -------------------- | ----------------------------------------------------------------------- | ---------- |
+| `<url>`              | The starting URL for link collection                                    | _Required_ |
+| `--depth`, `-d`      | The maximum recursion depth (0-5)                                       | 1          |
+| `--filters`          | JSON string of filter conditions                                        | None       |
+| `--filtersFile`      | Path to a JSON or YAML file containing filter conditions                | None       |
+| `--selector`, `-s`   | CSS selector to limit link extraction scope (only for the initial page) | None       |
+| `--delayMs`          | Delay in milliseconds between requests                                  | 1000       |
+| `--logLevel`, `-l`   | Logging level (debug, info, warn, error)                                | info       |
+| `--output`, `-o`     | Output file path (if not specified, outputs to stdout)                  | None       |
+| `--format`, `-f`     | Output format (json, txt)                                               | json       |
+| `--configFile`, `-c` | Path to a JSON or YAML configuration file                               | None       |
+| `--help`, `-h`       | Show help message                                                       | -          |
+
+#### `wlc format` - Convert collection results to various formats
+
+| Option           | Description                                              | Default    |
+| ---------------- | -------------------------------------------------------- | ---------- |
+| `--input`, `-i`  | Input JSON file (CollectionResult format)                | _Required_ |
+| `--output`, `-o` | Output directory                                         | _Required_ |
+| `--format`, `-f` | Output format (notebooklm)                               | _Required_ |
+| `--separator`    | For notebooklm: separator type (space or newline)        | newline    |
+| `--filename`     | Custom output filename (auto-generated if not specified) | None       |
+| `--help`, `-h`   | Show help message                                        | -          |
 
 ### Examples
+
+#### Link Collection Examples
 
 Collect links from a website with a recursion depth of 2:
 
 ```bash
 # Development mode (recommended)
-bun run dev --initialUrl https://example.com --depth 2
+bun run dev collect https://example.com --depth 2
 
 # Using built CLI
-bun run start --initialUrl https://example.com --depth 2
+bun run start collect https://example.com --depth 2
+
+# Global installation
+wlc collect https://example.com --depth 2
 ```
 
 Only collect links from the specified domain:
 
 ```bash
-bun run dev --initialUrl https://example.com --filters '{"domain": "example.com"}'
+wlc collect https://example.com --filters '{"domain": "example.com"}'
 ```
 
 Limit link extraction to a specific section of the initial page:
 
 ```bash
-bun run dev --initialUrl https://example.com --selector ".main-content a"
+wlc collect https://example.com --selector ".main-content a"
 ```
 
-Limit link extraction to a specific HTML element on the initial page:
+Use HTML element as extraction scope:
 
 ```bash
-bun run dev --initialUrl https://example.com --element main
+wlc collect https://example.com --element main
 ```
 
-Output results to a text file:
+Save results to a file:
 
 ```bash
-bun run dev --initialUrl https://example.com --output results.txt --format txt
+wlc collect https://example.com --output results.json
 ```
 
-Disable skipping URLs in query parameters:
+Output as plain text:
 
 ```bash
-bun run dev --initialUrl https://example.com --skipQuery false
+wlc collect https://example.com --format txt --output results.txt
+```
+
+#### Format Conversion Examples
+
+Convert collection results to NotebookLM format:
+
+```bash
+wlc format --input results.json --output ./output --format notebooklm
+```
+
+Convert with space separator:
+
+```bash
+wlc format --input results.json --output ./output --format notebooklm --separator space
+```
+
+Convert with custom filename:
+
+```bash
+wlc format --input results.json --output ./output --format notebooklm --filename my-urls.txt
+```
+
+#### Combined Workflow
+
+Collect links and then convert to NotebookLM format:
+
+```bash
+# Step 1: Collect links
+wlc collect https://example.com --depth 2 --output results.json
+
+# Step 2: Convert to NotebookLM format
+wlc format --input results.json --output ./output --format notebooklm
 ```
 
 Use a configuration file:
 
 ```bash
 # Development mode (recommended)
-bun run dev --configFile config.yaml
+bun run dev collect https://example.com --configFile config.yaml
 
 # Using built CLI
-bun run start --configFile config.yaml
+wlc collect https://example.com --configFile config.yaml
 ```
 
 ## Library Usage

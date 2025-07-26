@@ -179,7 +179,7 @@ VSCode may show TypeScript errors for Bun test files because it uses Node.js Typ
 
 ### Available Debug Configurations
 
-- **Launch web-link-collector (Bun)** - Debug the CLI tool
+- **Launch wlc (Bun)** - Debug the CLI tool
 - **Bun: Run All Tests** - Debug all tests
 - **Bun: Run Current Test File** - Debug currently open test file
 - **Bun: Run Formatters Tests** - Debug formatters tests specifically
