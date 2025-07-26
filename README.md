@@ -218,6 +218,29 @@ The `wlc` CLI supports two main commands:
 | `--filename`     | Custom output filename (auto-generated if not specified) | None       |
 | `--help`, `-h`   | Show help message                                        | -          |
 
+### Important CLI Notes
+
+#### Shell Special Characters
+
+When using CSS selectors that contain special characters (such as `#`, `:`, `[`, `]`, etc.), you must quote the selector argument to prevent shell interpretation:
+
+```bash
+# ❌ This will cause a shell error
+wlc collect https://example.com --selector #main-content
+
+# ✅ Use quotes to protect special characters
+wlc collect https://example.com --selector "#main-content"
+wlc collect https://example.com --selector '.content[data-type="main"]'
+wlc collect https://example.com --selector 'a:not(.external)'
+```
+
+This is especially important for:
+
+- ID selectors starting with `#`
+- Attribute selectors using `[` and `]`
+- Pseudo-class selectors using `:`
+- Complex selectors with spaces or special characters
+
 ### Examples
 
 #### Link Collection Examples
