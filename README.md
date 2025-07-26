@@ -115,10 +115,19 @@ This project uses Husky to enforce code quality with the following git hooks:
 Basic usage with the CLI tool:
 
 ```bash
-# グローバルインストールした場合
+# Development mode (recommended for local usage)
+bun run dev --initialUrl https://example.com --depth 2
+
+# Using built CLI
+bun run start --initialUrl https://example.com --depth 2
+
+# Direct execution
+bun dist/bin/web-link-collector.js --initialUrl https://example.com --depth 2
+
+# Global installation (if installed globally)
 web-link-collector --initialUrl https://example.com --depth 2
 
-# ローカルインストールした場合はnpxを使用
+# Using npx (if published to npm)
 npx web-link-collector --initialUrl https://example.com --depth 2
 ```
 
@@ -132,7 +141,7 @@ npx web-link-collector --initialUrl https://example.com --depth 2
 | `--filtersFile` | Path to a JSON or YAML file containing filter conditions                         | None       |
 | `--selector`    | CSS selector to limit link extraction scope (only for the initial page)          | None       |
 | `--element`     | HTML tag name to use as starting point for link extraction (e.g., main, article) | None       |
-| `--delayMs`     | Delay in milliseconds between requests                                           | 1000       |
+| `--delayMs`     | Delay in milliseconds between requests (recommended: 50)                         | 1000       |
 | `--logLevel`    | Logging level (debug, info, warn, error, none)                                   | info       |
 | `--output`      | Output file path (if not specified, outputs to stdout)                           | None       |
 | `--format`      | Output format (json, txt)                                                        | json       |
@@ -146,71 +155,51 @@ npx web-link-collector --initialUrl https://example.com --depth 2
 Collect links from a website with a recursion depth of 2:
 
 ```bash
-# グローバルインストールした場合
-web-link-collector --initialUrl https://example.com --depth 2
+# Development mode (recommended)
+bun run dev --initialUrl https://example.com --depth 2
 
-# ローカルインストールした場合
-npx web-link-collector --initialUrl https://example.com --depth 2
+# Using built CLI
+bun run start --initialUrl https://example.com --depth 2
 ```
 
 Only collect links from the specified domain:
 
 ```bash
-# グローバルインストールした場合
-web-link-collector --initialUrl https://example.com --filters '{"domain": "example.com"}'
-
-# ローカルインストールした場合
-npx web-link-collector --initialUrl https://example.com --filters '{"domain": "example.com"}'
+bun run dev --initialUrl https://example.com --filters '{"domain": "example.com"}'
 ```
 
 Limit link extraction to a specific section of the initial page:
 
 ```bash
-# グローバルインストールした場合
-web-link-collector --initialUrl https://example.com --selector ".main-content a"
-
-# ローカルインストールした場合
-npx web-link-collector --initialUrl https://example.com --selector ".main-content a"
+bun run dev --initialUrl https://example.com --selector ".main-content a"
 ```
 
 Limit link extraction to a specific HTML element on the initial page:
 
 ```bash
-# グローバルインストールした場合
-web-link-collector --initialUrl https://example.com --element main
-
-# ローカルインストールした場合
-npx web-link-collector --initialUrl https://example.com --element main
+bun run dev --initialUrl https://example.com --element main
 ```
 
 Output results to a text file:
 
 ```bash
-# グローバルインストールした場合
-web-link-collector --initialUrl https://example.com --output results.txt --format txt
-
-# ローカルインストールした場合
-npx web-link-collector --initialUrl https://example.com --output results.txt --format txt
+bun run dev --initialUrl https://example.com --output results.txt --format txt
 ```
 
 Disable skipping URLs in query parameters:
 
 ```bash
-# グローバルインストールした場合
-web-link-collector --initialUrl https://example.com --skipQuery false
-
-# ローカルインストールした場合
-npx web-link-collector --initialUrl https://example.com --skipQuery false
+bun run dev --initialUrl https://example.com --skipQuery false
 ```
 
 Use a configuration file:
 
 ```bash
-# Global installation
-web-link-collector --configFile config.yaml
+# Development mode (recommended)
+bun run dev --configFile config.yaml
 
-# Local installation
-bun web-link-collector --configFile config.yaml
+# Using built CLI
+bun run start --configFile config.yaml
 ```
 
 ## Library Usage
@@ -287,7 +276,7 @@ You can use JSON or YAML configuration files to specify options. Here's an examp
 ```yaml
 initialUrl: https://example.com
 depth: 2
-delayMs: 2000
+delayMs: 50 # Recommended: 50ms for faster crawling
 logLevel: info
 format: json
 
