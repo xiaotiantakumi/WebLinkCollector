@@ -176,8 +176,27 @@ const collectCommand = async (argv: any): Promise<void> => {
 
     // Output the results
     if (mergedConfig.output) {
-      logger.info(`結果をファイルに出力中: ${mergedConfig.output}`);
-      await writeFileOptimized(mergedConfig.output, output);
+      const { stat } = await import('fs/promises');
+      let outputPath = mergedConfig.output;
+
+      try {
+        const stats = await stat(outputPath);
+        if (stats.isDirectory()) {
+          // If output is a directory, generate a filename
+          const timestamp = new Date()
+            .toISOString()
+            .replace(/[:.]/g, '-')
+            .replace('T', '_')
+            .slice(0, 19);
+          const extension = mergedConfig.format === 'txt' ? 'txt' : 'json';
+          outputPath = `${outputPath.replace(/\/$/, '')}/link-collection_${timestamp}.${extension}`;
+        }
+      } catch {
+        // Path doesn't exist, treat as file path
+      }
+
+      logger.info(`結果をファイルに出力中: ${outputPath}`);
+      await writeFileOptimized(outputPath, output);
     } else {
       process.stdout.write(output);
     }
