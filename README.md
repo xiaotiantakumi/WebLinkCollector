@@ -110,6 +110,62 @@ This project uses Husky to enforce code quality with the following git hooks:
 - **pre-commit**: runs linting, formatting, and tests on staged files
 - **pre-push**: ensures all linting and tests pass before pushing changes
 
+## Development with VSCode
+
+### Debugging Bun Tests
+
+This project uses Bun for testing. To debug tests in VSCode properly, you **must** use the Test Explorer instead of the inline debug buttons in code files.
+
+#### Setup Requirements
+
+1. Install the Bun VSCode extension: `oven.bun-vscode`
+2. Reload VSCode after installation
+
+#### Debug Process
+
+**⚠️ Important:** Do NOT use the debug buttons that appear above test functions in the code editor - these will not work correctly with Bun tests.
+
+Instead, follow these steps:
+
+1. **Open Test Explorer**
+
+![Test Explorer](./docs/readme/1.png)
+
+2. **Find Your Test**
+
+   Navigate to the test you want to debug in the Test Explorer panel.
+
+3. **Use Debug Button in Test Explorer**
+
+   Click the debug button (🐛) next to the specific test in the Test Explorer panel.
+
+![Example](./docs/readme/2.png)
+
+4. **Debugging Session**
+
+The test will run in debug mode with proper Bun support and breakpoints will work correctly.
+
+![Example](./docs/readme/3.png)
+
+#### Why This Method is Required
+
+- VSCode's inline debug buttons use Node.js debugging by default
+- Bun tests require the Bun runtime, not Node.js
+- The Test Explorer integrates properly with the Bun extension
+- This ensures correct TypeScript and ES module handling
+
+#### Alternative: Terminal Debugging
+
+You can also debug from the terminal:
+
+```bash
+# Debug all tests
+bun test --inspect
+
+# Debug specific test file
+bun test --inspect tests/formatters/notebooklm.test.ts
+```
+
 ## CLI Usage
 
 Basic usage with the CLI tool:
